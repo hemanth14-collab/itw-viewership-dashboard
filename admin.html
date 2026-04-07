@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - ITW Viewership Repository</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F7F8FA;--card:#FFFFFF;--border:#E5E7EB;--border-light:#D1D5DB;--primary:#E8380D;--primary-light:#FEF2F0;--success:#059669;--danger:#DC2626;--text:#111827;--text-secondary:#4B5563;--text-muted:#9CA3AF;--radius:12px;--shadow:0 4px 16px rgba(0,0,0,0.06);--shadow-sm:0 1px 2px rgba(0,0,0,0.05)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Prompt',sans-serif}
+
+.header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.header-inner{max-width:900px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:42px;height:42px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Prompt',sans-serif;font-size:18px;font-weight:900;color:#fff;box-shadow:0 2px 8px rgba(232,56,13,0.3)}
+.logo h1{font-size:18px;font-weight:800;color:#1A1A2E}
+.logo span{font-size:12px;color:var(--text-muted);display:block;margin-top:1px;font-family:'Inter',sans-serif}
+.back-btn{padding:9px 18px;border-radius:9999px;border:2px solid var(--border);background:#fff;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.back-btn:hover{border-color:var(--primary);color:var(--primary);box-shadow:var(--shadow)}
+
+.main{max-width:900px;margin:0 auto;padding:32px}
+.info-banner{background:var(--primary-light);border:1px solid #FECACA;border-radius:var(--radius);padding:20px;margin-bottom:32px}
+.info-banner h3{font-size:14px;color:var(--primary);margin-bottom:6px}
+.info-banner p{font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+.tabs{display:flex;gap:4px;margin-bottom:28px;background:#fff;padding:4px;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-muted);transition:all .2s;border:none;background:none;font-family:'Inter',sans-serif}
+.tab.active{background:var(--primary);color:#fff}
+.tab:hover:not(.active){color:var(--text-secondary);background:var(--bg)}
+
+.panel{display:none}
+.panel.active{display:block}
+
+.form-section{margin-bottom:28px}
+.form-section-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.5px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-row.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:12px;font-weight:600;color:var(--text-muted)}
+.form-group input{padding:10px 12px;border-radius:8px;border:2px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:var(--primary)}
+.form-group input::placeholder{color:#D1D5DB}
+.hint{font-size:11px;color:var(--text-muted);font-style:italic;margin-top:2px}
+
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(232,56,13,0.2)}
+.btn-primary:hover{background:#D13009;transform:translateY(-1px)}
+.btn-success{background:var(--success);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.2)}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:var(--text-secondary);border:2px solid var(--border)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:9999px;font-size:14px;font-weight:600;color:#fff;z-index:200;transform:translateY(100px);opacity:0;transition:all .3s;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+
+.export-area{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;box-shadow:var(--shadow-sm)}
+.export-area textarea{width:100%;height:300px;background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none}
+.export-area textarea:focus{border-color:var(--primary)}
+.export-desc{font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.5}
+
+.event-list{display:flex;flex-direction:column;gap:8px}
+.event-list-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all .2s;box-shadow:var(--shadow-sm)}
+.event-list-item:hover{box-shadow:var(--shadow)}
+.event-list-item .ev-name{font-size:14px;font-weight:600;color:var(--text)}
+.event-list-item .ev-status{font-size:11px;padding:3px 10px;border-radius:9999px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.ev-status.has-data{background:#ECFDF5;color:#059669}
+.ev-status.no-data{background:#FEF2F2;color:#DC2626}
+.event-list-item .ev-actions{display:flex;gap:6px}
+.ev-btn{padding:6px 14px;border-radius:9999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text-secondary);font-family:'Inter',sans-serif;transition:all .15s}
+.ev-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.ev-btn.del:hover{background:var(--danger);border-color:var(--danger)}
+
+@media(max-width:600px){.form-row,.form-row.three{grid-template-columns:1fr}.main{padding:20px 16px}.btn-row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="passwordGate" style="position:fixed;inset:0;background:#F7F8FA;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:40px;max-width:400px;width:90%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.08)">
+    <div style="width:56px;height:56px;background:#E8380D;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 4px 12px rgba(232,56,13,0.3)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <h2 style="font-family:'Prompt',sans-serif;font-size:22px;font-weight:800;color:#1A1A2E;margin-bottom:6px">Admin Access</h2>
+    <p style="font-size:13px;color:#9CA3AF;margin-bottom:24px">Enter the password to access the admin panel.</p>
+    <input type="password" id="pwInput" placeholder="Enter password..." style="width:100%;padding:12px 16px;border-radius:9999px;border:2px solid #E5E7EB;font-size:14px;font-family:'Inter',sans-serif;outline:none;text-align:center;margin-bottom:12px;transition:border-color .2s" autofocus>
+    <div id="pwError" style="color:#DC2626;font-size:12px;font-weight:600;margin-bottom:12px;display:none">Incorrect password. Please try again.</div>
+    <button id="pwSubmit" style="width:100%;padding:12px;border-radius:9999px;background:#E8380D;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 2px 8px rgba(232,56,13,0.3);transition:background .2s">Unlock</button>
+  </div>
+</div>
+<script>
+(function(){
+  const HASH = 'd791367741f41526a0abe094976f26fa4f0732ccb2f96634be4fa21a1a7f4aa7';
+  async function sha256(s){const e=new TextEncoder().encode(s);const h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+  if(sessionStorage.getItem('itw_admin_auth')==='1'){document.getElementById('passwordGate').style.display='none';}
+  document.getElementById('pwSubmit').addEventListener('click',async()=>{
+    const v=document.getElementById('pwInput').value;
+    const h=await sha256(v);
+    if(h===HASH){sessionStorage.setItem('itw_admin_auth','1');document.getElementById('passwordGate').style.display='none';}
+    else{document.getElementById('pwError').style.display='block';document.getElementById('pwInput').style.borderColor='#DC2626';document.getElementById('pwInput').value='';document.getElementById('pwInput').focus();}
+  });
+  document.getElementById('pwInput').addEventListener('keydown',(e)=>{if(e.key==='Enter')document.getElementById('pwSubmit').click();});
+})();
+</script>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">ITW</div>
+      <div><h1>Admin Panel</h1><span>Manage Event Viewership Data</span></div>
+    </div>
+    <a href="index.html" class="back-btn">&larr; Back to Dashboard</a>
+  </div>
+</header>
+
+<main class="main">
+  <div class="info-banner">
+    <h3>How Data Management Works</h3>
+    <p>
+      <strong>Option 1 (Quick edits):</strong> Edit data here and click "Save to Browser". Changes apply instantly to the dashboard on this device via browser storage.<br>
+      <strong>Option 2 (Permanent):</strong> After editing, go to "Export" tab to download the updated <code>data.js</code> file. Replace the existing file in your project folder to make changes permanent across all devices.
+    </p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="edit">Add / Edit Event</button>
+    <button class="tab" data-tab="manage">Manage Events</button>
+    <button class="tab" data-tab="export">Export Data</button>
+  </div>
+
+  <div class="panel active" id="panel-edit">
+    <div class="form-section">
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Select Event to Edit (or type new name to create)</label>
+          <input type="text" id="eventSelect" list="eventListData" placeholder="Type event name or select existing...">
+          <datalist id="eventListData"></datalist>
+          <div class="hint">Select an existing event to load its data, or type a new event name to add one.</div>
+        </div>
+      </div>
+    </div>
+    <div id="formFields">
+      <div class="form-section"><div class="form-section-title">Broadcaster Info</div><div class="form-row"><div class="form-group"><label>LTV Broadcaster</label><input type="text" id="f_ltvBroadcaster" placeholder="e.g. Star Sports"></div><div class="form-group"><label>Digital Broadcaster</label><input type="text" id="f_digitalBroadcaster" placeholder="e.g. JioHotstar"></div></div><div class="form-row full"><div class="form-group"><label>Data Source</label><input type="text" id="f_dataSource" placeholder="e.g. BARC, JioStar"></div></div></div>
+      <div class="form-section"><div class="form-section-title">Key Metrics (values in Millions)</div><div class="form-row three"><div class="form-group"><label>Cumulative Viewership</label><input type="number" step="any" id="f_cumulativeViewership" placeholder="e.g. 29400"></div><div class="form-group"><label>Reach (TV + OTT)</label><input type="number" step="any" id="f_reach" placeholder="e.g. 1189"></div><div class="form-group"><label>Avg. TVR</label><input type="number" step="any" id="f_avgTVR" placeholder="e.g. 4.0"></div></div></div>
+      <div class="form-section"><div class="form-section-title">Platform Reach (in Millions)</div><div class="form-row"><div class="form-group"><label>LTV Reach</label><input type="number" step="any" id="f_ltvReach" placeholder="e.g. 537"></div><div class="form-group"><label>OTT Reach</label><input type="number" step="any" id="f_ottReach" placeholder="e.g. 652"></div></div></div>
+      <div class="form-section"><div class="form-section-title">Gender Wise Split (decimal, e.g. 0.53 for 53%)</div><div class="form-row"><div class="form-group"><label>Male 2+</label><input type="number" step="any" id="f_gender_male" placeholder="e.g. 0.53"></div><div class="form-group"><label>Female 2+</label><input type="number" step="any" id="f_gender_female" placeholder="e.g. 0.47"></div></div></div>
+      <div class="form-section"><div class="form-section-title">Urban Rural Split (decimal)</div><div class="form-row"><div class="form-group"><label>Urban</label><input type="number" step="any" id="f_urban" placeholder="e.g. 0.49"></div><div class="form-group"><label>Rural</label><input type="number" step="any" id="f_rural" placeholder="e.g. 0.51"></div></div></div>
+      <div class="form-section"><div class="form-section-title">NCCS Breakdown (decimal)</div><div class="form-row three"><div class="form-group"><label>NCCS A</label><input type="number" step="any" id="f_nccs_a" placeholder="e.g. 0.29"></div><div class="form-group"><label>NCCS B</label><input type="number" step="any" id="f_nccs_b" placeholder="e.g. 0.33"></div><div class="form-group"><label>NCCS CDE</label><input type="number" step="any" id="f_nccs_cde" placeholder="e.g. 0.38"></div></div></div>
+      <div class="form-section"><div class="form-section-title">Age Wise Split (decimal)</div><div class="form-row three"><div class="form-group"><label>&lt;15</label><input type="number" step="any" id="f_age_u15" placeholder="e.g. 0.17"></div><div class="form-group"><label>15-21</label><input type="number" step="any" id="f_age_15_21" placeholder="e.g. 0.21"></div><div class="form-group"><label>22-40</label><input type="number" step="any" id="f_age_22_40" placeholder="e.g. 0.23"></div></div><div class="form-row" style="margin-top:0"><div class="form-group"><label>41-50</label><input type="number" step="any" id="f_age_41_50" placeholder="e.g. 0.19"></div><div class="form-group"><label>50+</label><input type="number" step="any" id="f_age_50p" placeholder="e.g. 0.20"></div></div></div>
+      <div class="btn-row"><button class="btn btn-primary" id="saveBtn">Save to Browser</button><button class="btn btn-outline" id="clearFormBtn">Clear Form</button></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-manage"><div class="event-list" id="eventListManage"></div></div>
+
+  <div class="panel" id="panel-export">
+    <p class="export-desc">Below is the complete <code>data.js</code> file content including all your edits. To make changes permanent:<br>1. Click "Copy to Clipboard" or "Download data.js"<br>2. Replace the existing <code>data.js</code> file in your project folder with this content.</p>
+    <div class="btn-row" style="margin-top:0;margin-bottom:16px"><button class="btn btn-primary" id="copyExportBtn">Copy to Clipboard</button><button class="btn btn-success" id="downloadExportBtn">Download data.js</button></div>
+    <div class="export-area"><textarea id="exportArea" readonly></textarea></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+(function() {
+  function getAllData() {
+    const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+    const merged = {};
+    for (const k of Object.keys(EVENT_DATA)) merged[k] = overrides[k] ? { ...EVENT_DATA[k], ...overrides[k] } : { ...EVENT_DATA[k] };
+    for (const k of Object.keys(overrides)) { if (!merged[k]) merged[k] = overrides[k]; }
+    return merged;
+  }
+  function hasData(d) { return d && (d.cumulativeViewership !== null || d.reach !== null || d.avgTVR !== null); }
+  function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 3000); }
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'manage') renderManageList();
+      if (tab.dataset.tab === 'export') renderExport();
+    });
+  });
+
+  function populateDatalist() { const dl = document.getElementById('eventListData'); dl.innerHTML = ''; Object.keys(getAllData()).sort().forEach(name => { const opt = document.createElement('option'); opt.value = name; dl.appendChild(opt); }); }
+  populateDatalist();
+
+  const eventInput = document.getElementById('eventSelect');
+  eventInput.addEventListener('change', loadEvent);
+  eventInput.addEventListener('input', () => { setTimeout(loadEvent, 100); });
+
+  function loadEvent() {
+    const name = eventInput.value.trim(); const d = getAllData()[name];
+    if (!d) { clearForm(true); return; }
+    setVal('f_ltvBroadcaster', d.ltvBroadcaster); setVal('f_digitalBroadcaster', d.digitalBroadcaster); setVal('f_dataSource', d.dataSource);
+    setVal('f_cumulativeViewership', d.cumulativeViewership); setVal('f_reach', d.reach); setVal('f_avgTVR', d.avgTVR);
+    setVal('f_ltvReach', d.ltvReach); setVal('f_ottReach', d.ottReach);
+    setVal('f_gender_male', d.gender?.male); setVal('f_gender_female', d.gender?.female);
+    setVal('f_urban', d.urbanRural?.urban); setVal('f_rural', d.urbanRural?.rural);
+    setVal('f_nccs_a', d.nccs?.a); setVal('f_nccs_b', d.nccs?.b); setVal('f_nccs_cde', d.nccs?.cde);
+    setVal('f_age_u15', d.age?.['<15']); setVal('f_age_15_21', d.age?.['15-21']); setVal('f_age_22_40', d.age?.['22-40']); setVal('f_age_41_50', d.age?.['41-50']); setVal('f_age_50p', d.age?.['50+']);
+  }
+
+  function setVal(id, v) { document.getElementById(id).value = (v !== null && v !== undefined) ? v : ''; }
+  function getVal(id) { const v = document.getElementById(id).value.trim(); return v === '' ? null : v; }
+  function getNum(id) { const v = document.getElementById(id).value.trim(); return v === '' ? null : parseFloat(v); }
+  function clearForm(keepName) { document.querySelectorAll('#formFields input').forEach(i => i.value = ''); if (!keepName) eventInput.value = ''; }
+  document.getElementById('clearFormBtn').addEventListener('click', () => clearForm(false));
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const name = eventInput.value.trim();
+    if (!name) { showToast('Please enter an event name', 'error'); return; }
+    const gm = getNum('f_gender_male'), gf = getNum('f_gender_female');
+    const uu = getNum('f_urban'), ur = getNum('f_rural');
+    const na = getNum('f_nccs_a'), nb = getNum('f_nccs_b'), nc = getNum('f_nccs_cde');
+    const a1 = getNum('f_age_u15'), a2 = getNum('f_age_15_21'), a3 = getNum('f_age_22_40'), a4 = getNum('f_age_41_50'), a5 = getNum('f_age_50p');
+    const entry = { ltvBroadcaster: getVal('f_ltvBroadcaster'), digitalBroadcaster: getVal('f_digitalBroadcaster'), dataSource: getVal('f_dataSource'),
+      cumulativeViewership: getNum('f_cumulativeViewership'), reach: getNum('f_reach'), avgTVR: getNum('f_avgTVR'), ltvReach: getNum('f_ltvReach'), ottReach: getNum('f_ottReach'),
+      gender: (gm !== null || gf !== null) ? { male: gm, female: gf } : null,
+      urbanRural: (uu !== null || ur !== null) ? { urban: uu, rural: ur } : null,
+      nccs: (na !== null || nb !== null || nc !== null) ? { a: na, b: nb, cde: nc } : null,
+      age: (a1 !== null || a2 !== null || a3 !== null || a4 !== null || a5 !== null) ? { '<15': a1, '15-21': a2, '22-40': a3, '41-50': a4, '50+': a5 } : null };
+    const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+    overrides[name] = entry; localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+    populateDatalist(); showToast('Saved "' + name + '" successfully!');
+  });
+
+  function renderManageList() {
+    const container = document.getElementById('eventListManage'); container.innerHTML = ''; const all = getAllData();
+    Object.keys(all).sort().forEach(name => {
+      const hd = hasData(all[name]); const div = document.createElement('div'); div.className = 'event-list-item';
+      div.innerHTML = `<div><div class="ev-name">${name}</div><span class="ev-status ${hd ? 'has-data' : 'no-data'}">${hd ? 'Has Data' : 'No Data'}</span></div><div class="ev-actions"><button class="ev-btn edit-ev">Edit</button><button class="ev-btn del">Remove Override</button></div>`;
+      div.querySelector('.edit-ev').addEventListener('click', () => { eventInput.value = name; loadEvent(); document.querySelector('[data-tab="edit"]').click(); });
+      div.querySelector('.del').addEventListener('click', () => { const o = JSON.parse(localStorage.getItem('itw_overrides') || '{}'); delete o[name]; localStorage.setItem('itw_overrides', JSON.stringify(o)); showToast(!EVENT_DATA[name] ? 'Removed "'+name+'"' : 'Reset "'+name+'" to original'); renderManageList(); });
+      container.appendChild(div);
+    });
+  }
+
+  function renderExport() {
+    const all = getAllData(); let js = `/*\n * ITW Internal Viewership Repository - Event Data\n * All viewership/reach numbers are in MILLIONS.\n * Use null for unavailable data.\n */\n\nconst EVENT_DATA = {\n`;
+    const names = Object.keys(all).sort();
+    names.forEach((name, idx) => { const d = all[name];
+      js += `\n  ${JSON.stringify(name)}: {\n    ltvBroadcaster: ${JSON.stringify(d.ltvBroadcaster)},\n    digitalBroadcaster: ${JSON.stringify(d.digitalBroadcaster)},\n    dataSource: ${JSON.stringify(d.dataSource)},\n    cumulativeViewership: ${d.cumulativeViewership},\n    reach: ${d.reach},\n    avgTVR: ${d.avgTVR},\n    ltvReach: ${d.ltvReach},\n    ottReach: ${d.ottReach},\n`;
+      js += d.gender ? `    gender: { male: ${d.gender.male}, female: ${d.gender.female} },\n` : `    gender: null,\n`;
+      js += d.urbanRural ? `    urbanRural: { urban: ${d.urbanRural.urban}, rural: ${d.urbanRural.rural} },\n` : `    urbanRural: null,\n`;
+      js += d.nccs ? `    nccs: { a: ${d.nccs.a}, b: ${d.nccs.b}, cde: ${d.nccs.cde} },\n` : `    nccs: null,\n`;
+      js += d.age ? `    age: { "<15": ${d.age['<15']}, "15-21": ${d.age['15-21']}, "22-40": ${d.age['22-40']}, "41-50": ${d.age['41-50']}, "50+": ${d.age['50+']} }\n` : `    age: null\n`;
+      js += `  }${idx < names.length - 1 ? ',' : ''}\n`;
+    });
+    js += `\n};\n`; document.getElementById('exportArea').value = js;
+  }
+
+  document.getElementById('copyExportBtn').addEventListener('click', () => { const a = document.getElementById('exportArea'); a.select(); navigator.clipboard.writeText(a.value).then(() => showToast('Copied!')).catch(() => { document.execCommand('copy'); showToast('Copied!'); }); });
+  document.getElementById('downloadExportBtn').addEventListener('click', () => { const b = new Blob([document.getElementById('exportArea').value], { type: 'text/javascript' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'data.js'; a.click(); URL.revokeObjectURL(a.href); showToast('Downloaded!'); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+/*
+ * ITW Internal Viewership Repository - Event Data
+ * ================================================
+ * To add/edit event data:
+ *   1. Open admin.html in a browser for a guided form, OR
+ *   2. Edit this file directly following the structure below.
+ *
+ * All viewership/reach numbers are in MILLIONS.
+ * Gender, Urban/Rural, NCCS, and Age values are decimal percentages (0.53 = 53%).
+ * Use null for any metric where data is not available.
+ */
+
+const EVENT_DATA = {
+
+  "IPL-2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 29400,
+    reach: 1189,
+    avgTVR: 4,
+    ltvReach: 537,
+    ottReach: 652,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.49, rural: 0.51 },
+    nccs: { a: 0.29, b: 0.33, cde: 0.38 },
+    age: { "<15": 0.17, "15-21": 0.21, "22-40": 0.23, "41-50": 0.19, "50+": 0.20 }
+  },
+
+  "WPL-2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 780.4,
+    reach: 319,
+    avgTVR: 0.59,
+    ltvReach: 149,
+    ottReach: 170,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "ICC WCWC-2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 1385,
+    reach: 586.8,
+    avgTVR: 0.27,
+    ltvReach: 140.8,
+    ottReach: 446,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.49, rural: 0.51 },
+    nccs: { a: 0.33, b: 0.33, cde: 0.34 },
+    age: { "<15": 0.21, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.18 }
+  },
+
+  "ICC Men's T20 WC 2024": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 1500,
+    reach: 560,
+    avgTVR: 0.97,
+    ltvReach: 304.1,
+    ottReach: 255.9,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Ind v Eng 2025-Test (Men's)": {
+    ltvBroadcaster: "Sony Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates Based on JioHotstar Data",
+    cumulativeViewership: 3361,
+    reach: 475.7,
+    avgTVR: 0.5,
+    ltvReach: 103.5,
+    ottReach: 372.2,
+    gender: { male: 0.56, female: 0.44 },
+    urbanRural: { urban: 0.59, rural: 0.41 },
+    nccs: { a: 0.35, b: 0.33, cde: 0.31 },
+    age: null
+  },
+
+  "Ind v WI 2025-Test (Men's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 440.2,
+    reach: 138.9,
+    avgTVR: 0.27,
+    ltvReach: 69.9,
+    ottReach: 69,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.34, b: 0.28, cde: 0.38 },
+    age: { "<15": 0.23, "15-21": 0.14, "22-40": 0.33, "41-50": 0.14, "50+": 0.16 }
+  },
+
+  "Ind v Aus 2025 ODI (Men's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 657.9,
+    reach: 218.8,
+    avgTVR: 1.19,
+    ltvReach: 123.2,
+    ottReach: 95.6,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.34, b: 0.33, cde: 0.33 },
+    age: { "<15": 0.21, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
+  },
+
+  "Ind v Aus 2025 T20I (Men's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 584.7,
+    reach: 190.7,
+    avgTVR: 1.51,
+    ltvReach: 86.2,
+    ottReach: 104.5,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.49, rural: 0.51 },
+    nccs: { a: 0.33, b: 0.33, cde: 0.34 },
+    age: { "<15": 0.20, "15-21": 0.13, "22-40": 0.35, "41-50": 0.14, "50+": 0.18 }
+  },
+
+  "Ind v SA 2025 ODI (Men's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 1095.26,
+    reach: 334.68,
+    avgTVR: 1.7,
+    ltvReach: 114.43,
+    ottReach: 220.25,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.34, b: 0.33, cde: 0.33 },
+    age: { "<15": 0.21, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
+  },
+
+  "Ind v SA 2025 T20I (Men's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 657.9,
+    reach: 218.8,
+    avgTVR: 1.19,
+    ltvReach: 123.2,
+    ottReach: 95.6,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.34, b: 0.33, cde: 0.33 },
+    age: { "<15": 0.21, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
+  },
+
+  "Ind v NZ 2025 ODI (Men's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Ind v NZ 2025 T20I (Men's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Ind v Aus 2025 ODI (Women's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Ind v SL 2025 ODI (Women's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "PKL-2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 929,
+    reach: 286,
+    avgTVR: 0.56,
+    ltvReach: 178,
+    ottReach: 108,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.41, rural: 0.59 },
+    nccs: { a: 0.28, b: 0.24, cde: 0.46 },
+    age: { "<15": 0.23, "15-21": 0.15, "22-40": 0.33, "41-50": 0.14, "50+": 0.16 }
+  },
+
+  "Asia Cup-2025": {
+    ltvBroadcaster: "Sony Sports",
+    digitalBroadcaster: "SonyLiv",
+    dataSource: "BARC, GSIQ DAR Studies",
+    cumulativeViewership: 1470,
+    reach: 354.8,
+    avgTVR: 1.85,
+    ltvReach: 256.4,
+    ottReach: 98.4,
+    gender: { male: 0.54, female: 0.46 },
+    urbanRural: { urban: 0.56, rural: 0.44 },
+    nccs: { a: 0.34, b: 0.33, cde: 0.33 },
+    age: { "<15": 0.23, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.16 }
+  },
+
+  "ICC WTC Final-2025": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "ISL-2024/25": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar (Was JioCinema until 14th February 2025)",
+    dataSource: "BARC, OTT Estimates based on JioCinema/JioHotstar data",
+    cumulativeViewership: 844.7,
+    reach: 354.8,
+    avgTVR: 0.04,
+    ltvReach: 256.4,
+    ottReach: 98.4,
+    gender: { male: 0.54, female: 0.46 },
+    urbanRural: { urban: 0.56, rural: 0.44 },
+    nccs: { a: 0.34, b: 0.33, cde: 0.33 },
+    age: { "<15": 0.24, "15-21": 0.13, "22-40": 0.29, "41-50": 0.16, "50+": 0.18 }
+  },
+
+  "Rugby Premier League": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Ultimate Table Tennis": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
+  "Namibia ICC T20 WC": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar data",
+    cumulativeViewership: 464.63,
+    reach: 160.7,
+    avgTVR: 1.12,
+    ltvReach: 94.3,
+    ottReach: 66.4,
+    gender: { male: 0.56, female: 0.44 },
+    urbanRural: { urban: 0.51, rural: 0.49 },
+    nccs: { a: 0.33, b: 0.33, cde: 0.34 },
+    age: { "<15": 0.20, "15-21": 0.13, "22-40": 0.34, "41-50": 0.16, "50+": 0.17 }
+  }
+
+};
