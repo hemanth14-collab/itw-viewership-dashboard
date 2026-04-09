@@ -231,6 +231,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "Ind v SL 2025 T20Is (Women's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
   "Ind v WI 2025-Test (Men's)": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
@@ -277,15 +292,15 @@ const EVENT_DATA = {
   },
 
   "Rugby Premier League": {
-    ltvBroadcaster: null,
-    digitalBroadcaster: null,
-    dataSource: null,
-    cumulativeViewership: null,
-    reach: null,
-    avgTVR: null,
-    ltvReach: null,
-    ottReach: null,
-    gender: null,
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 12,
+    reach: 3.87,
+    avgTVR: 0.01,
+    ltvReach: 0.87,
+    ottReach: 1,
+    gender: { male: -1, female: null },
     urbanRural: null,
     nccs: null,
     age: null
@@ -306,6 +321,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "WPL 2026": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar Data",
+    cumulativeViewership: 1342.5,
+    reach: 386.2,
+    avgTVR: 0.63,
+    ltvReach: 107.6,
+    ottReach: 278.6,
+    gender: { male: 0.55, female: -2.55 },
+    urbanRural: { urban: 0.51, rural: -1.51 },
+    nccs: { a: 0.32, b: 0.34, cde: -12.67 },
+    age: { "<15": 0.22, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
+  },
+
   "WPL-2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
@@ -319,6 +349,21 @@ const EVENT_DATA = {
     urbanRural: null,
     nccs: null,
     age: null
+  },
+
+  "WPL-2026": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar Data",
+    cumulativeViewership: 1342.5,
+    reach: 386.2,
+    avgTVR: 0.63,
+    ltvReach: 107.6,
+    ottReach: 278.6,
+    gender: { male: 0.55, female: 0.45 },
+    urbanRural: { urban: 0.51, rural: 0.49 },
+    nccs: { a: 0.32, b: 0.34, cde: 0.33 },
+    age: { "<15": 0.22, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
   }
 
 };
