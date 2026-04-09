@@ -136,8 +136,8 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
 .chart-card:hover{box-shadow:var(--shadow)}
 .chart-card h3{font-size:16px;font-weight:700;margin-bottom:4px;color:var(--secondary)}
 .chart-card .chart-desc{font-size:11px;color:var(--text-muted);font-style:italic;font-weight:500;line-height:1.6;margin-bottom:16px}
-.chart-container{position:relative;width:100%;max-width:260px;margin:0 auto}
-.chart-card.bar-chart .chart-container{max-width:100%}
+.chart-container{position:relative;width:100%;max-width:300px;margin:0 auto}
+.chart-card.bar-chart .chart-container{max-width:100%;min-height:220px}
 .chart-na{padding:40px;text-align:center;color:var(--text-muted);font-style:italic;font-size:14px;background:var(--surface);border-radius:var(--radius);border:1px dashed var(--border)}
 
 /* Source footer */
@@ -344,7 +344,18 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
 
 <script src="data.js"></script>
 <script>
-(function() {
+(async function() {
+  // Fetch latest data.json (auto-updated by admin panel via GitHub API)
+  try {
+    const res = await fetch('data.json?v=' + Date.now());
+    if (res.ok) {
+      const freshData = await res.json();
+      // Replace EVENT_DATA contents with latest from data.json
+      Object.keys(EVENT_DATA).forEach(k => delete EVENT_DATA[k]);
+      Object.assign(EVENT_DATA, freshData);
+    }
+  } catch(e) { /* fall back to bundled data.js */ }
+
   const events = Object.keys(EVENT_DATA).sort((a, b) => a.localeCompare(b));
   const searchInput = document.getElementById('searchInput');
   const dropdownList = document.getElementById('dropdownList');
@@ -358,10 +369,6 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
   function getData(eventName) {
     const base = EVENT_DATA[eventName];
     if (!base) return null;
-    try {
-      const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
-      if (overrides[eventName]) return { ...base, ...overrides[eventName] };
-    } catch(e) {}
     return base;
   }
 
@@ -451,14 +458,14 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
       plugins: [ChartDataLabels],
       data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#fff', borderWidth: 3, hoverOffset: 8 }] },
       options: {
-        responsive: true, maintainAspectRatio: true, cutout: '58%',
+        responsive: true, maintainAspectRatio: true, cutout: '55%',
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#4B5563', font: { family: 'Inter', size: 12, weight: '600' }, padding: 16, usePointStyle: true, pointStyleWidth: 10 } },
+          legend: { position: 'bottom', labels: { color: '#4B5563', font: { family: 'Inter', size: 14, weight: '600' }, padding: 20, usePointStyle: true, pointStyleWidth: 12 } },
           tooltip: { backgroundColor: '#1F2937', titleColor: '#fff', bodyColor: '#fff', borderColor: '#374151', borderWidth: 1, cornerRadius: 8, padding: 12,
             callbacks: { label: (ctx) => ` ${ctx.label}: ${(ctx.parsed * 100).toFixed(1)}%` } },
-          datalabels: { color: '#fff', font: { family: 'Prompt', size: 13, weight: '700' },
+          datalabels: { color: '#fff', font: { family: 'Prompt', size: 15, weight: '800' },
             formatter: (v) => (v * 100).toFixed(1) + '%',
-            textShadowColor: 'rgba(0,0,0,0.3)', textShadowBlur: 4 }
+            textShadowColor: 'rgba(0,0,0,0.4)', textShadowBlur: 6 }
         }
       }
     });
@@ -491,42 +498,153 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
         type: 'bar',
         plugins: [ChartDataLabels],
         data: { labels: Object.keys(d.age), datasets: [{ label: 'Reach %', data: Object.values(d.age).map(v => (v * 100).toFixed(1)),
-          backgroundColor: ['#E8380D', '#FF6B35', '#2563EB', '#7C3AED', '#059669'], borderRadius: 6, borderSkipped: false, barPercentage: 0.65 }] },
+          backgroundColor: ['#E8380D', '#FF6B35', '#2563EB', '#7C3AED', '#059669'], borderRadius: 8, borderSkipped: false, barPercentage: 0.6 }] },
         options: { responsive: true, maintainAspectRatio: true, indexAxis: 'y',
-          scales: { x: { grid: { color: '#F3F4F6' }, ticks: { color: '#6B7280', font: { family: 'Inter', size: 11 }, callback: v => v + '%' }, max: 40 },
-            y: { grid: { display: false }, ticks: { color: '#111827', font: { family: 'Prompt', size: 13, weight: '600' } } } },
+          scales: { x: { grid: { color: '#F3F4F6' }, ticks: { color: '#6B7280', font: { family: 'Inter', size: 13 }, callback: v => v + '%' }, max: 40 },
+            y: { grid: { display: false }, ticks: { color: '#111827', font: { family: 'Prompt', size: 15, weight: '700' } } } },
           plugins: { legend: { display: false },
             tooltip: { backgroundColor: '#1F2937', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 8, callbacks: { label: (ctx) => ` ${ctx.parsed.x}%` } },
-            datalabels: { anchor: 'end', align: 'right', color: '#111827', font: { family: 'Prompt', size: 12, weight: '700' }, formatter: (v) => v + '%', offset: 4 } } }
+            datalabels: { anchor: 'end', align: 'right', color: '#111827', font: { family: 'Prompt', size: 14, weight: '800' }, formatter: (v) => v + '%', offset: 6 } } }
       });
     } else { showChart(ac, false); }
   }
 
-  // PDF Export
+  // Multi-page PDF Export
   exportBtn.addEventListener('click', async () => {
     const overlay = document.getElementById('pdfOverlay');
     overlay.classList.add('show');
 
     try {
-      const el = document.getElementById('pdfCapture');
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#F7F8FA', logging: false, windowWidth: 1400 });
       const { jsPDF } = window.jspdf;
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const pdfW = 297; // A4 landscape width in mm
-      const pdfH = 210; // A4 landscape height in mm
-      const ratio = Math.min(pdfW / imgW, pdfH / imgH);
-      const w = imgW * ratio;
-      const h = imgH * ratio;
-      const pdf = new jsPDF({ orientation: h > w ? 'portrait' : 'landscape', unit: 'mm', format: [w + 20, h + 30] });
-      // Title
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.setTextColor(150);
-      pdf.text('ITW Internal Viewership Repository', 10, 10);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const PW = 297, PH = 210, M = 12; // page width, height, margin
+      const CW = PW - M * 2; // content width
+
+      const captureOpts = { scale: 3, useCORS: true, backgroundColor: '#FFFFFF', logging: false, windowWidth: 1400 };
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      function addHeader(pg) {
+        pdf.setFillColor(232, 56, 13);
+        pdf.rect(0, 0, PW, 2, 'F');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.setTextColor(155);
+        pdf.text('ITW Internal Viewership Repository  |  ' + (selectedEvent || '') + '  |  ' + dateStr, M, 9);
+        pdf.setFontSize(8);
+        pdf.setTextColor(180);
+        pdf.text('Page ' + pg, PW - M, 9, { align: 'right' });
+      }
+
+      // Capture each section
+      const sections = [
+        { id: 'event-header-section', els: ['.event-header', '.metrics-grid', '.reach-section'] },
+      ];
+      // We'll capture sections individually for multi-page
+
+      // --- PAGE 1: Header + Metrics + Reach ---
+      addHeader(1);
+      const evHeader = document.querySelector('.event-header');
+      const metricsGrid = document.querySelector('.metrics-grid');
+      const reachSection = document.querySelector('.reach-section');
+
+      let yPos = 14;
+
+      const c1 = await html2canvas(evHeader, captureOpts);
+      let r1 = CW / c1.width;
+      let h1 = c1.height * r1;
+      if (h1 > 50) { r1 = 50 / c1.height; h1 = 50; }
+      pdf.addImage(c1.toDataURL('image/png'), 'PNG', M, yPos, c1.width * r1, h1);
+      yPos += h1 + 6;
+
+      const c2 = await html2canvas(metricsGrid, captureOpts);
+      let r2 = CW / c2.width;
+      let h2 = c2.height * r2;
+      if (h2 > 70) { r2 = 70 / c2.height; h2 = 70; }
+      pdf.addImage(c2.toDataURL('image/png'), 'PNG', M, yPos, c2.width * r2, h2);
+      yPos += h2 + 6;
+
+      const c3 = await html2canvas(reachSection, captureOpts);
+      let r3 = CW / c3.width;
+      let h3 = c3.height * r3;
+      const maxH3 = PH - yPos - M;
+      if (h3 > maxH3) { r3 = maxH3 / c3.height; h3 = maxH3; }
+      pdf.addImage(c3.toDataURL('image/png'), 'PNG', M, yPos, c3.width * r3, h3);
+
+      // --- PAGE 2: Gender + Urban/Rural (side by side, large) ---
+      const genderCard = document.getElementById('genderCard');
+      const urbanCard = document.getElementById('urbanRuralCard');
+      const genderVisible = genderCard.querySelector('.chart-container').style.display !== 'none';
+      const urbanVisible = urbanCard.querySelector('.chart-container').style.display !== 'none';
+
+      if (genderVisible || urbanVisible) {
+        pdf.addPage('a4', 'landscape');
+        addHeader(2);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(26, 26, 46);
+        pdf.text('Linear TV Reach Summary — Gender & Geography', M, 22);
+
+        const chartY = 28;
+        const halfW = (CW - 8) / 2;
+        const chartMaxH = PH - chartY - M;
+
+        if (genderVisible) {
+          const cg = await html2canvas(genderCard, captureOpts);
+          let rg = halfW / cg.width;
+          let hg = cg.height * rg;
+          if (hg > chartMaxH) { rg = chartMaxH / cg.height; hg = chartMaxH; }
+          pdf.addImage(cg.toDataURL('image/png'), 'PNG', M, chartY, cg.width * rg, hg);
+        }
+        if (urbanVisible) {
+          const cu = await html2canvas(urbanCard, captureOpts);
+          let ru = halfW / cu.width;
+          let hu = cu.height * ru;
+          if (hu > chartMaxH) { ru = chartMaxH / cu.height; hu = chartMaxH; }
+          pdf.addImage(cu.toDataURL('image/png'), 'PNG', M + halfW + 8, chartY, cu.width * ru, hu);
+        }
+      }
+
+      // --- PAGE 3: NCCS + Age (side by side, large) ---
+      const nccsCard = document.getElementById('nccsCard');
+      const ageCard = document.getElementById('ageCard');
+      const nccsVisible = nccsCard.querySelector('.chart-container').style.display !== 'none';
+      const ageVisible = ageCard.querySelector('.chart-container').style.display !== 'none';
+
+      if (nccsVisible || ageVisible) {
+        pdf.addPage('a4', 'landscape');
+        addHeader(3);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(26, 26, 46);
+        pdf.text('Linear TV Reach Summary — NCCS & Age Demographics', M, 22);
+
+        const chartY = 28;
+        const halfW = (CW - 8) / 2;
+        const chartMaxH = PH - chartY - M;
+
+        if (nccsVisible) {
+          const cn = await html2canvas(nccsCard, captureOpts);
+          let rn = halfW / cn.width;
+          let hn = cn.height * rn;
+          if (hn > chartMaxH) { rn = chartMaxH / cn.height; hn = chartMaxH; }
+          pdf.addImage(cn.toDataURL('image/png'), 'PNG', M, chartY, cn.width * rn, hn);
+        }
+        if (ageVisible) {
+          const ca = await html2canvas(ageCard, captureOpts);
+          let ra = halfW / ca.width;
+          let ha = ca.height * ra;
+          if (ha > chartMaxH) { ra = chartMaxH / ca.height; ha = chartMaxH; }
+          pdf.addImage(ca.toDataURL('image/png'), 'PNG', M + halfW + 8, chartY, ca.width * ra, ha);
+        }
+      }
+
+      // --- Footer on last page ---
+      const lastPage = pdf.getNumberOfPages();
+      pdf.setPage(lastPage);
       pdf.setFontSize(8);
-      pdf.text('Generated: ' + new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }), 10, 16);
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 22, w, h);
+      pdf.setTextColor(180);
+      pdf.text('Data Source: ' + (getData(selectedEvent)?.dataSource || 'N/A') + '  |  Confidential — For Internal Use Only', M, PH - 5);
+
       pdf.save((selectedEvent || 'Dashboard') + ' - Viewership Report.pdf');
     } catch(e) {
       console.error('PDF export failed:', e);

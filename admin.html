@@ -25,6 +25,13 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 .info-banner h3{font-size:14px;color:var(--primary);margin-bottom:6px}
 .info-banner p{font-size:13px;color:var(--text-secondary);line-height:1.6}
 
+.gh-status-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;margin-bottom:24px;font-size:13px;font-weight:600}
+.gh-status-bar.connected{background:#ECFDF5;color:#059669;border:1px solid #A7F3D0}
+.gh-status-bar.disconnected{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.gh-status-bar .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gh-status-bar.connected .dot{background:#059669}
+.gh-status-bar.disconnected .dot{background:#DC2626}
+
 .tabs{display:flex;gap:4px;margin-bottom:28px;background:#fff;padding:4px;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
 .tab{flex:1;padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-muted);transition:all .2s;border:none;background:none;font-family:'Inter',sans-serif}
 .tab.active{background:var(--primary);color:#fff}
@@ -53,6 +60,7 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 .btn-success:hover{background:#047857}
 .btn-outline{background:#fff;color:var(--text-secondary);border:2px solid var(--border)}
 .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:9999px;font-size:14px;font-weight:600;color:#fff;z-index:200;transform:translateY(100px);opacity:0;transition:all .3s;font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.15)}
 .toast.show{transform:translateY(0);opacity:1}
@@ -75,6 +83,14 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 .ev-btn{padding:6px 14px;border-radius:9999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text-secondary);font-family:'Inter',sans-serif;transition:all .15s}
 .ev-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 .ev-btn.del:hover{background:var(--danger);border-color:var(--danger)}
+
+.settings-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.settings-section h3{font-family:'Prompt',sans-serif;font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:6px}
+.settings-section p{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px}
+.settings-section code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--primary)}
+.test-result{margin-top:16px;padding:12px 16px;border-radius:8px;font-size:13px;font-weight:500;display:none}
+.test-result.ok{display:block;background:#ECFDF5;color:#059669;border:1px solid #A7F3D0}
+.test-result.fail{display:block;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
 
 @media(max-width:600px){.form-row,.form-row.three{grid-template-columns:1fr}.main{padding:20px 16px}.btn-row{flex-direction:column}}
 </style>
@@ -121,17 +137,23 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 
 <main class="main">
   <div class="info-banner">
-    <h3>How Data Management Works</h3>
+    <h3>Auto-Publish Enabled</h3>
     <p>
-      <strong>Option 1 (Quick edits):</strong> Edit data here and click "Save to Browser". Changes apply instantly to the dashboard on this device via browser storage.<br>
-      <strong>Option 2 (Permanent):</strong> After editing, go to "Export" tab to download the updated <code>data.js</code> file. Replace the existing file in your project folder to make changes permanent across all devices.
+      Edit data and click <strong>"Save &amp; Publish"</strong>. Changes are automatically pushed to GitHub and go live for all users within ~60 seconds.<br>
+      First-time setup: Go to the <strong>Settings</strong> tab to connect your GitHub account (one-time).
     </p>
+  </div>
+
+  <div id="ghStatusBar" class="gh-status-bar disconnected">
+    <span class="dot"></span>
+    <span id="ghStatusText">GitHub not connected. Go to Settings to configure.</span>
   </div>
 
   <div class="tabs">
     <button class="tab active" data-tab="edit">Add / Edit Event</button>
     <button class="tab" data-tab="manage">Manage Events</button>
-    <button class="tab" data-tab="export">Export Data</button>
+    <button class="tab" data-tab="export">Export / Backup</button>
+    <button class="tab" data-tab="settings">Settings</button>
   </div>
 
   <div class="panel active" id="panel-edit">
@@ -153,16 +175,55 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
       <div class="form-section"><div class="form-section-title">Urban Rural Split (decimal)</div><div class="form-row"><div class="form-group"><label>Urban</label><input type="number" step="any" id="f_urban" placeholder="e.g. 0.49"></div><div class="form-group"><label>Rural</label><input type="number" step="any" id="f_rural" placeholder="e.g. 0.51"></div></div></div>
       <div class="form-section"><div class="form-section-title">NCCS Breakdown (decimal)</div><div class="form-row three"><div class="form-group"><label>NCCS A</label><input type="number" step="any" id="f_nccs_a" placeholder="e.g. 0.29"></div><div class="form-group"><label>NCCS B</label><input type="number" step="any" id="f_nccs_b" placeholder="e.g. 0.33"></div><div class="form-group"><label>NCCS CDE</label><input type="number" step="any" id="f_nccs_cde" placeholder="e.g. 0.38"></div></div></div>
       <div class="form-section"><div class="form-section-title">Age Wise Split (decimal)</div><div class="form-row three"><div class="form-group"><label>&lt;15</label><input type="number" step="any" id="f_age_u15" placeholder="e.g. 0.17"></div><div class="form-group"><label>15-21</label><input type="number" step="any" id="f_age_15_21" placeholder="e.g. 0.21"></div><div class="form-group"><label>22-40</label><input type="number" step="any" id="f_age_22_40" placeholder="e.g. 0.23"></div></div><div class="form-row" style="margin-top:0"><div class="form-group"><label>41-50</label><input type="number" step="any" id="f_age_41_50" placeholder="e.g. 0.19"></div><div class="form-group"><label>50+</label><input type="number" step="any" id="f_age_50p" placeholder="e.g. 0.20"></div></div></div>
-      <div class="btn-row"><button class="btn btn-primary" id="saveBtn">Save to Browser</button><button class="btn btn-outline" id="clearFormBtn">Clear Form</button></div>
+      <div class="btn-row"><button class="btn btn-primary" id="saveBtn">Save &amp; Publish</button><button class="btn btn-outline" id="clearFormBtn">Clear Form</button></div>
     </div>
   </div>
 
   <div class="panel" id="panel-manage"><div class="event-list" id="eventListManage"></div></div>
 
   <div class="panel" id="panel-export">
-    <p class="export-desc">Below is the complete <code>data.js</code> file content including all your edits. To make changes permanent:<br>1. Click "Copy to Clipboard" or "Download data.js"<br>2. Replace the existing <code>data.js</code> file in your project folder with this content.</p>
+    <p class="export-desc">Below is the complete <code>data.js</code> file content including all your edits. Use this as a backup or for manual deployment.</p>
     <div class="btn-row" style="margin-top:0;margin-bottom:16px"><button class="btn btn-primary" id="copyExportBtn">Copy to Clipboard</button><button class="btn btn-success" id="downloadExportBtn">Download data.js</button></div>
     <div class="export-area"><textarea id="exportArea" readonly></textarea></div>
+  </div>
+
+  <div class="panel" id="panel-settings">
+    <div class="settings-section">
+      <h3>GitHub Connection</h3>
+      <p>
+        Connect to your GitHub repository so changes auto-publish when you save. You need a
+        <strong>Personal Access Token (classic)</strong> with <code>repo</code> scope, or a fine-grained token with <strong>Contents: Read and write</strong> permission.
+      </p>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>GitHub Personal Access Token</label>
+          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <div class="hint">Generate at: GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; Tokens (classic)</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Repository Owner</label>
+          <input type="text" id="ghOwner" value="hemanth14-collab" placeholder="e.g. hemanth14-collab">
+        </div>
+        <div class="form-group">
+          <label>Repository Name</label>
+          <input type="text" id="ghRepo" value="itw-viewership-dashboard" placeholder="e.g. itw-viewership-dashboard">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Branch</label>
+          <input type="text" id="ghBranch" value="main" placeholder="main">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="ghSaveBtn">Save Settings</button>
+        <button class="btn btn-success" id="ghTestBtn">Test Connection</button>
+        <button class="btn btn-outline" id="ghClearBtn">Disconnect</button>
+      </div>
+      <div class="test-result" id="ghTestResult"></div>
+    </div>
   </div>
 </main>
 
@@ -170,7 +231,62 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 
 <script src="data.js"></script>
 <script>
-(function() {
+(async function() {
+  // ── GitHub API helpers ──
+  const GH_KEY = 'itw_gh_config';
+
+  function getGH() {
+    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function ghOk() { const c = getGH(); return !!(c.token && c.owner && c.repo); }
+
+  async function ghAPI(path, opts = {}) {
+    const c = getGH();
+    const res = await fetch('https://api.github.com' + path, {
+      ...opts,
+      headers: { 'Authorization': 'Bearer ' + c.token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    });
+    return res;
+  }
+
+  async function ghGetFile(filePath) {
+    const c = getGH();
+    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath + '?ref=' + (c.branch || 'main'));
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+    return await res.json();
+  }
+
+  async function ghPutFile(filePath, content, message) {
+    const c = getGH();
+    const existing = await ghGetFile(filePath);
+    const body = {
+      message: message,
+      content: btoa(unescape(encodeURIComponent(content))),
+      branch: c.branch || 'main'
+    };
+    if (existing) body.sha = existing.sha;
+    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath, {
+      method: 'PUT', body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'GitHub API error: ' + res.status);
+    }
+    return await res.json();
+  }
+
+  // ── Fetch latest data from GitHub on page load ──
+  try {
+    const res = await fetch('data.json?v=' + Date.now());
+    if (res.ok) {
+      const freshData = await res.json();
+      Object.keys(EVENT_DATA).forEach(k => delete EVENT_DATA[k]);
+      Object.assign(EVENT_DATA, freshData);
+    }
+  } catch(e) { /* use bundled data.js */ }
+
+  // ── Data helpers ──
   function getAllData() {
     const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
     const merged = {};
@@ -179,8 +295,24 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     return merged;
   }
   function hasData(d) { return d && (d.cumulativeViewership !== null || d.reach !== null || d.avgTVR !== null); }
-  function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 3000); }
+  function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 4000); }
 
+  // ── GitHub status bar ──
+  function updateGHStatus() {
+    const bar = document.getElementById('ghStatusBar');
+    const text = document.getElementById('ghStatusText');
+    if (ghOk()) {
+      const c = getGH();
+      bar.className = 'gh-status-bar connected';
+      text.textContent = 'Connected to ' + c.owner + '/' + c.repo + ' (' + (c.branch || 'main') + ')';
+    } else {
+      bar.className = 'gh-status-bar disconnected';
+      text.textContent = 'GitHub not connected. Go to Settings to configure.';
+    }
+  }
+  updateGHStatus();
+
+  // ── Tabs ──
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -189,12 +321,15 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
       document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
       if (tab.dataset.tab === 'manage') renderManageList();
       if (tab.dataset.tab === 'export') renderExport();
+      if (tab.dataset.tab === 'settings') loadGHSettings();
     });
   });
 
+  // ── Datalist ──
   function populateDatalist() { const dl = document.getElementById('eventListData'); dl.innerHTML = ''; Object.keys(getAllData()).sort().forEach(name => { const opt = document.createElement('option'); opt.value = name; dl.appendChild(opt); }); }
   populateDatalist();
 
+  // ── Edit form ──
   const eventInput = document.getElementById('eventSelect');
   eventInput.addEventListener('change', loadEvent);
   eventInput.addEventListener('input', () => { setTimeout(loadEvent, 100); });
@@ -217,52 +352,204 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   function clearForm(keepName) { document.querySelectorAll('#formFields input').forEach(i => i.value = ''); if (!keepName) eventInput.value = ''; }
   document.getElementById('clearFormBtn').addEventListener('click', () => clearForm(false));
 
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    const name = eventInput.value.trim();
-    if (!name) { showToast('Please enter an event name', 'error'); return; }
+  function buildEntry() {
     const gm = getNum('f_gender_male'), gf = getNum('f_gender_female');
     const uu = getNum('f_urban'), ur = getNum('f_rural');
     const na = getNum('f_nccs_a'), nb = getNum('f_nccs_b'), nc = getNum('f_nccs_cde');
     const a1 = getNum('f_age_u15'), a2 = getNum('f_age_15_21'), a3 = getNum('f_age_22_40'), a4 = getNum('f_age_41_50'), a5 = getNum('f_age_50p');
-    const entry = { ltvBroadcaster: getVal('f_ltvBroadcaster'), digitalBroadcaster: getVal('f_digitalBroadcaster'), dataSource: getVal('f_dataSource'),
+    return {
+      ltvBroadcaster: getVal('f_ltvBroadcaster'), digitalBroadcaster: getVal('f_digitalBroadcaster'), dataSource: getVal('f_dataSource'),
       cumulativeViewership: getNum('f_cumulativeViewership'), reach: getNum('f_reach'), avgTVR: getNum('f_avgTVR'), ltvReach: getNum('f_ltvReach'), ottReach: getNum('f_ottReach'),
       gender: (gm !== null || gf !== null) ? { male: gm, female: gf } : null,
       urbanRural: (uu !== null || ur !== null) ? { urban: uu, rural: ur } : null,
       nccs: (na !== null || nb !== null || nc !== null) ? { a: na, b: nb, cde: nc } : null,
-      age: (a1 !== null || a2 !== null || a3 !== null || a4 !== null || a5 !== null) ? { '<15': a1, '15-21': a2, '22-40': a3, '41-50': a4, '50+': a5 } : null };
-    const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
-    overrides[name] = entry; localStorage.setItem('itw_overrides', JSON.stringify(overrides));
-    populateDatalist(); showToast('Saved "' + name + '" successfully!');
+      age: (a1 !== null || a2 !== null || a3 !== null || a4 !== null || a5 !== null) ? { '<15': a1, '15-21': a2, '22-40': a3, '41-50': a4, '50+': a5 } : null
+    };
+  }
+
+  function buildDataJS(all) {
+    let js = '/*\n * ITW Internal Viewership Repository - Event Data\n * All viewership/reach numbers are in MILLIONS.\n * Use null for unavailable data.\n */\n\nconst EVENT_DATA = {\n';
+    const names = Object.keys(all).sort();
+    names.forEach((name, idx) => { const d = all[name];
+      js += '\n  ' + JSON.stringify(name) + ': {\n    ltvBroadcaster: ' + JSON.stringify(d.ltvBroadcaster) + ',\n    digitalBroadcaster: ' + JSON.stringify(d.digitalBroadcaster) + ',\n    dataSource: ' + JSON.stringify(d.dataSource) + ',\n    cumulativeViewership: ' + d.cumulativeViewership + ',\n    reach: ' + d.reach + ',\n    avgTVR: ' + d.avgTVR + ',\n    ltvReach: ' + d.ltvReach + ',\n    ottReach: ' + d.ottReach + ',\n';
+      js += d.gender ? '    gender: { male: ' + d.gender.male + ', female: ' + d.gender.female + ' },\n' : '    gender: null,\n';
+      js += d.urbanRural ? '    urbanRural: { urban: ' + d.urbanRural.urban + ', rural: ' + d.urbanRural.rural + ' },\n' : '    urbanRural: null,\n';
+      js += d.nccs ? '    nccs: { a: ' + d.nccs.a + ', b: ' + d.nccs.b + ', cde: ' + d.nccs.cde + ' },\n' : '    nccs: null,\n';
+      js += d.age ? '    age: { "<15": ' + d.age['<15'] + ', "15-21": ' + d.age['15-21'] + ', "22-40": ' + d.age['22-40'] + ', "41-50": ' + d.age['41-50'] + ', "50+": ' + d.age['50+'] + ' }\n' : '    age: null\n';
+      js += '  }' + (idx < names.length - 1 ? ',' : '') + '\n';
+    });
+    js += '\n};\n';
+    return js;
+  }
+
+  // ── Save & Publish ──
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.addEventListener('click', async () => {
+    const name = eventInput.value.trim();
+    if (!name) { showToast('Please enter an event name', 'error'); return; }
+
+    const entry = buildEntry();
+    const all = getAllData();
+    all[name] = entry;
+
+    if (ghOk()) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4m0 12v4m-8-10H2m20 0h-4m-1.3-6.7l-2.8 2.8m-5.8 5.8l-2.8 2.8m0-11.4l2.8 2.8m5.8 5.8l2.8 2.8"/></svg> Publishing...';
+
+      try {
+        const jsonContent = JSON.stringify(all, null, 2);
+        const jsContent = buildDataJS(all);
+
+        // Commit data.json first, then data.js
+        await ghPutFile('data.json', jsonContent, 'Update event data: ' + name);
+        await ghPutFile('data.js', jsContent, 'Update event data: ' + name);
+
+        // Clear localStorage overrides since data is now in GitHub
+        localStorage.removeItem('itw_overrides');
+        // Update in-memory EVENT_DATA
+        Object.keys(EVENT_DATA).forEach(k => delete EVENT_DATA[k]);
+        Object.assign(EVENT_DATA, all);
+
+        populateDatalist();
+        showToast('Published! Changes go live in ~60 seconds.');
+      } catch(e) {
+        console.error('Publish failed:', e);
+        showToast('Publish failed: ' + e.message, 'error');
+        // Fall back to localStorage
+        const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+        overrides[name] = entry;
+        localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+        populateDatalist();
+      }
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = 'Save &amp; Publish';
+    } else {
+      // No GitHub config — save locally and warn
+      const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+      overrides[name] = entry;
+      localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+      populateDatalist();
+      showToast('Saved locally only. Connect GitHub in Settings to publish.', 'error');
+    }
   });
 
+  // ── Manage Events ──
   function renderManageList() {
     const container = document.getElementById('eventListManage'); container.innerHTML = ''; const all = getAllData();
     Object.keys(all).sort().forEach(name => {
       const hd = hasData(all[name]); const div = document.createElement('div'); div.className = 'event-list-item';
-      div.innerHTML = `<div><div class="ev-name">${name}</div><span class="ev-status ${hd ? 'has-data' : 'no-data'}">${hd ? 'Has Data' : 'No Data'}</span></div><div class="ev-actions"><button class="ev-btn edit-ev">Edit</button><button class="ev-btn del">Remove Override</button></div>`;
+      div.innerHTML = '<div><div class="ev-name">' + name + '</div><span class="ev-status ' + (hd ? 'has-data' : 'no-data') + '">' + (hd ? 'Has Data' : 'No Data') + '</span></div><div class="ev-actions"><button class="ev-btn edit-ev">Edit</button><button class="ev-btn del">Delete</button></div>';
       div.querySelector('.edit-ev').addEventListener('click', () => { eventInput.value = name; loadEvent(); document.querySelector('[data-tab="edit"]').click(); });
-      div.querySelector('.del').addEventListener('click', () => { const o = JSON.parse(localStorage.getItem('itw_overrides') || '{}'); delete o[name]; localStorage.setItem('itw_overrides', JSON.stringify(o)); showToast(!EVENT_DATA[name] ? 'Removed "'+name+'"' : 'Reset "'+name+'" to original'); renderManageList(); });
+      div.querySelector('.del').addEventListener('click', async () => {
+        if (!confirm('Delete "' + name + '"? This will remove it from the dataset.')) return;
+        const all = getAllData();
+        delete all[name];
+        if (ghOk()) {
+          try {
+            await ghPutFile('data.json', JSON.stringify(all, null, 2), 'Delete event: ' + name);
+            await ghPutFile('data.js', buildDataJS(all), 'Delete event: ' + name);
+            localStorage.removeItem('itw_overrides');
+            Object.keys(EVENT_DATA).forEach(k => delete EVENT_DATA[k]);
+            Object.assign(EVENT_DATA, all);
+            showToast('Deleted "' + name + '" and published.');
+          } catch(e) {
+            showToast('Delete failed: ' + e.message, 'error');
+          }
+        } else {
+          // Local-only delete via override
+          const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+          delete overrides[name];
+          localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+          if (EVENT_DATA[name]) delete EVENT_DATA[name];
+          showToast('Deleted locally. Connect GitHub to publish.');
+        }
+        populateDatalist();
+        renderManageList();
+      });
       container.appendChild(div);
     });
   }
 
+  // ── Export ──
   function renderExport() {
-    const all = getAllData(); let js = `/*\n * ITW Internal Viewership Repository - Event Data\n * All viewership/reach numbers are in MILLIONS.\n * Use null for unavailable data.\n */\n\nconst EVENT_DATA = {\n`;
-    const names = Object.keys(all).sort();
-    names.forEach((name, idx) => { const d = all[name];
-      js += `\n  ${JSON.stringify(name)}: {\n    ltvBroadcaster: ${JSON.stringify(d.ltvBroadcaster)},\n    digitalBroadcaster: ${JSON.stringify(d.digitalBroadcaster)},\n    dataSource: ${JSON.stringify(d.dataSource)},\n    cumulativeViewership: ${d.cumulativeViewership},\n    reach: ${d.reach},\n    avgTVR: ${d.avgTVR},\n    ltvReach: ${d.ltvReach},\n    ottReach: ${d.ottReach},\n`;
-      js += d.gender ? `    gender: { male: ${d.gender.male}, female: ${d.gender.female} },\n` : `    gender: null,\n`;
-      js += d.urbanRural ? `    urbanRural: { urban: ${d.urbanRural.urban}, rural: ${d.urbanRural.rural} },\n` : `    urbanRural: null,\n`;
-      js += d.nccs ? `    nccs: { a: ${d.nccs.a}, b: ${d.nccs.b}, cde: ${d.nccs.cde} },\n` : `    nccs: null,\n`;
-      js += d.age ? `    age: { "<15": ${d.age['<15']}, "15-21": ${d.age['15-21']}, "22-40": ${d.age['22-40']}, "41-50": ${d.age['41-50']}, "50+": ${d.age['50+']} }\n` : `    age: null\n`;
-      js += `  }${idx < names.length - 1 ? ',' : ''}\n`;
-    });
-    js += `\n};\n`; document.getElementById('exportArea').value = js;
+    document.getElementById('exportArea').value = buildDataJS(getAllData());
   }
 
   document.getElementById('copyExportBtn').addEventListener('click', () => { const a = document.getElementById('exportArea'); a.select(); navigator.clipboard.writeText(a.value).then(() => showToast('Copied!')).catch(() => { document.execCommand('copy'); showToast('Copied!'); }); });
   document.getElementById('downloadExportBtn').addEventListener('click', () => { const b = new Blob([document.getElementById('exportArea').value], { type: 'text/javascript' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'data.js'; a.click(); URL.revokeObjectURL(a.href); showToast('Downloaded!'); });
+
+  // ── Settings ──
+  function loadGHSettings() {
+    const c = getGH();
+    document.getElementById('ghToken').value = c.token || '';
+    document.getElementById('ghOwner').value = c.owner || '';
+    document.getElementById('ghRepo').value = c.repo || '';
+    document.getElementById('ghBranch').value = c.branch || 'main';
+  }
+
+  document.getElementById('ghSaveBtn').addEventListener('click', () => {
+    const config = {
+      token: document.getElementById('ghToken').value.trim(),
+      owner: document.getElementById('ghOwner').value.trim(),
+      repo: document.getElementById('ghRepo').value.trim(),
+      branch: document.getElementById('ghBranch').value.trim() || 'main'
+    };
+    if (!config.token || !config.owner || !config.repo) {
+      showToast('Please fill in token, owner, and repo name.', 'error'); return;
+    }
+    localStorage.setItem(GH_KEY, JSON.stringify(config));
+    updateGHStatus();
+    showToast('GitHub settings saved!');
+  });
+
+  document.getElementById('ghTestBtn').addEventListener('click', async () => {
+    const result = document.getElementById('ghTestResult');
+    const btn = document.getElementById('ghTestBtn');
+    btn.disabled = true; btn.textContent = 'Testing...';
+
+    // Save settings first
+    const config = {
+      token: document.getElementById('ghToken').value.trim(),
+      owner: document.getElementById('ghOwner').value.trim(),
+      repo: document.getElementById('ghRepo').value.trim(),
+      branch: document.getElementById('ghBranch').value.trim() || 'main'
+    };
+    if (!config.token || !config.owner || !config.repo) {
+      result.className = 'test-result fail'; result.textContent = 'Please fill in all fields first.';
+      btn.disabled = false; btn.textContent = 'Test Connection'; return;
+    }
+    localStorage.setItem(GH_KEY, JSON.stringify(config));
+    updateGHStatus();
+
+    try {
+      const res = await ghAPI('/repos/' + config.owner + '/' + config.repo);
+      if (res.ok) {
+        const repo = await res.json();
+        result.className = 'test-result ok';
+        result.textContent = 'Connected! Repository: ' + repo.full_name + (repo.private ? ' (private)' : ' (public)') + '. Push permission: OK.';
+      } else if (res.status === 404) {
+        result.className = 'test-result fail'; result.textContent = 'Repository not found. Check owner/repo name.';
+      } else if (res.status === 401) {
+        result.className = 'test-result fail'; result.textContent = 'Invalid token. Check your Personal Access Token.';
+      } else {
+        result.className = 'test-result fail'; result.textContent = 'Error: HTTP ' + res.status;
+      }
+    } catch(e) {
+      result.className = 'test-result fail'; result.textContent = 'Connection failed: ' + e.message;
+    }
+    btn.disabled = false; btn.textContent = 'Test Connection';
+  });
+
+  document.getElementById('ghClearBtn').addEventListener('click', () => {
+    if (!confirm('Disconnect GitHub? You can reconnect anytime.')) return;
+    localStorage.removeItem(GH_KEY);
+    document.getElementById('ghToken').value = '';
+    document.getElementById('ghTestResult').className = 'test-result';
+    updateGHStatus();
+    showToast('GitHub disconnected.');
+  });
 })();
 </script>
+<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
 </body>
 </html>
