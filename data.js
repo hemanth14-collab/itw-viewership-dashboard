@@ -321,21 +321,6 @@ const EVENT_DATA = {
     age: null
   },
 
-  "WPL 2026": {
-    ltvBroadcaster: "Star Sports",
-    digitalBroadcaster: "JioHotstar",
-    dataSource: "BARC, OTT Estimates based on JioHotstar Data",
-    cumulativeViewership: 1342.5,
-    reach: 386.2,
-    avgTVR: 0.63,
-    ltvReach: 107.6,
-    ottReach: 278.6,
-    gender: { male: 0.55, female: -2.55 },
-    urbanRural: { urban: 0.51, rural: -1.51 },
-    nccs: { a: 0.32, b: 0.34, cde: -12.67 },
-    age: { "<15": 0.22, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
-  },
-
   "WPL-2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
