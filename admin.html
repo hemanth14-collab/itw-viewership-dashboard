@@ -198,7 +198,7 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
         <div class="form-group">
           <label>GitHub Personal Access Token</label>
           <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-          <div class="hint">Generate at: GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; Tokens (classic)</div>
+          <div class="hint">Generate at: GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; <strong>Tokens (classic)</strong> &rarr; Generate new token (classic) &rarr; check <strong>repo</strong> scope. Do NOT use "Fine-grained tokens" unless you also grant Contents: Read and write.</div>
         </div>
       </div>
       <div class="form-row">
@@ -242,10 +242,9 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 
   async function ghAPI(path, opts = {}) {
     const c = getGH();
-    const res = await fetch('https://api.github.com' + path, {
-      ...opts,
-      headers: { 'Authorization': 'Bearer ' + c.token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json', ...(opts.headers || {}) }
-    });
+    const headers = { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github.v3+json', ...(opts.headers || {}) };
+    if (opts.body) headers['Content-Type'] = 'application/json';
+    const res = await fetch('https://api.github.com' + path, { ...opts, headers });
     return res;
   }
 
@@ -507,7 +506,6 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     const btn = document.getElementById('ghTestBtn');
     btn.disabled = true; btn.textContent = 'Testing...';
 
-    // Save settings first
     const config = {
       token: document.getElementById('ghToken').value.trim(),
       owner: document.getElementById('ghOwner').value.trim(),
@@ -522,18 +520,59 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     updateGHStatus();
 
     try {
+      // Step 1: Check repo access
       const res = await ghAPI('/repos/' + config.owner + '/' + config.repo);
-      if (res.ok) {
-        const repo = await res.json();
-        result.className = 'test-result ok';
-        result.textContent = 'Connected! Repository: ' + repo.full_name + (repo.private ? ' (private)' : ' (public)') + '. Push permission: OK.';
-      } else if (res.status === 404) {
-        result.className = 'test-result fail'; result.textContent = 'Repository not found. Check owner/repo name.';
-      } else if (res.status === 401) {
-        result.className = 'test-result fail'; result.textContent = 'Invalid token. Check your Personal Access Token.';
-      } else {
-        result.className = 'test-result fail'; result.textContent = 'Error: HTTP ' + res.status;
+      const scopes = res.headers.get('x-oauth-scopes') || '';
+      const tokenType = scopes ? 'classic' : 'fine-grained';
+
+      if (res.status === 401) {
+        result.className = 'test-result fail'; result.textContent = 'Invalid token. The token was rejected by GitHub.';
+        btn.disabled = false; btn.textContent = 'Test Connection'; return;
       }
+      if (res.status === 404) {
+        result.className = 'test-result fail'; result.textContent = 'Repository not found. Check owner/repo name, or the token may not have access to this repo.';
+        btn.disabled = false; btn.textContent = 'Test Connection'; return;
+      }
+      if (!res.ok) {
+        result.className = 'test-result fail'; result.textContent = 'Error: HTTP ' + res.status;
+        btn.disabled = false; btn.textContent = 'Test Connection'; return;
+      }
+
+      const repo = await res.json();
+      const canPush = repo.permissions && repo.permissions.push;
+
+      // Step 2: Check scopes for classic tokens
+      if (tokenType === 'classic' && !scopes.includes('repo')) {
+        result.className = 'test-result fail';
+        result.innerHTML = 'Token is a <strong>classic</strong> token but is missing the <strong>repo</strong> scope. Scopes found: <code>' + (scopes || 'none') + '</code>. Please regenerate with the <strong>repo</strong> scope checked.';
+        btn.disabled = false; btn.textContent = 'Test Connection'; return;
+      }
+
+      // Step 3: Try reading a file to verify contents access
+      let writeTest = 'not tested';
+      try {
+        const fileRes = await ghAPI('/repos/' + config.owner + '/' + config.repo + '/contents/data.json?ref=' + (config.branch || 'main'));
+        if (fileRes.status === 403) {
+          writeTest = 'blocked';
+        } else {
+          writeTest = 'ok';
+        }
+      } catch(e) { writeTest = 'error'; }
+
+      if (writeTest === 'blocked') {
+        result.className = 'test-result fail';
+        result.innerHTML = 'Token type: <strong>' + tokenType + '</strong>. Can see repo but <strong>cannot access file contents</strong>. ';
+        if (tokenType === 'fine-grained') {
+          result.innerHTML += 'For fine-grained tokens, go to token settings and add <strong>Contents: Read and write</strong> permission for this repository.';
+        } else {
+          result.innerHTML += 'Please regenerate with the <strong>repo</strong> scope.';
+        }
+        btn.disabled = false; btn.textContent = 'Test Connection'; return;
+      }
+
+      result.className = 'test-result ok';
+      result.innerHTML = 'All checks passed!<br>Repository: <strong>' + repo.full_name + '</strong> (' + (repo.private ? 'private' : 'public') + ')<br>Token type: <strong>' + tokenType + '</strong>' + (scopes ? ' — Scopes: <code>' + scopes + '</code>' : '') + '<br>Push permission: <strong>' + (canPush ? 'Yes' : 'No') + '</strong><br>File access: <strong>OK</strong>';
+
     } catch(e) {
       result.className = 'test-result fail'; result.textContent = 'Connection failed: ' + e.message;
     }
