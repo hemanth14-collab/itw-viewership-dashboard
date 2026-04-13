@@ -518,110 +518,41 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
     } else { showChart(ac, false); }
   }
 
-  // PDF Export — compact header, 2×2 equal chart grid filling the page
+  // PDF Export — screenshot the dashboard exactly as-is, fit on 1 A4 page
   exportBtn.addEventListener('click', async () => {
     const overlay = document.getElementById('pdfOverlay');
     overlay.classList.add('show');
 
     try {
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const PW = 210, PH = 297, M = 10;
-      const CW = PW - M * 2;
-      const d = getData(selectedEvent);
-      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-      const src = d?.dataSource || 'N/A';
+      const captureEl = document.getElementById('pdfCapture');
 
-      // ── Header strip ──
-      pdf.setFillColor(232, 56, 13);
-      pdf.rect(0, 0, PW, 2, 'F');
-
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(26, 26, 46);
-      pdf.text(selectedEvent || '', M, 10);
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(150);
-      pdf.text('ITW Core Viewership Repository  |  ' + dateStr, PW - M, 10, { align: 'right' });
-
-      // ── Key numbers — single compact line ──
-      const nums = [];
-      if (d.cumulativeViewership !== null) nums.push('Cumulative: ' + fmt(d.cumulativeViewership) + ' M');
-      if (d.reach !== null) nums.push('Reach: ' + fmt(d.reach) + ' M');
-      if (d.avgTVR !== null) nums.push('TVR: ' + d.avgTVR);
-      if (d.ltvReach !== null) nums.push('LTV Reach: ' + fmt(d.ltvReach) + ' M');
-      if (d.ottReach !== null) nums.push('OTT Reach: ' + fmt(d.ottReach) + ' M');
-
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5); pdf.setTextColor(70);
-      pdf.text(nums.join('    |    '), M, 16);
-
-      // Broadcaster line
-      const bcast = [];
-      if (d.ltvBroadcaster) bcast.push('LTV: ' + d.ltvBroadcaster);
-      if (d.digitalBroadcaster) bcast.push('Digital: ' + d.digitalBroadcaster);
-      if (d.dataSource) bcast.push('Source: ' + d.dataSource);
-
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(130);
-      pdf.text(bcast.join('    \u2022    '), M, 20);
-
-      // Divider
-      pdf.setDrawColor(220); pdf.setLineWidth(0.3);
-      pdf.line(M, 23, PW - M, 23);
-
-      // ── Footer (draw now so charts know the boundary) ──
-      const footerY = PH - 8;
-      pdf.setDrawColor(220); pdf.setLineWidth(0.2);
-      pdf.line(M, footerY, PW - M, footerY);
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6); pdf.setTextColor(155);
-      pdf.text('Data Source: ' + src, M, footerY + 4);
-      pdf.text('Confidential \u2014 For Internal Use Only', PW - M, footerY + 4, { align: 'right' });
-
-      // ── Charts — 2×2 equal grid filling the page ──
-      const chartDefs = [
-        { id: 'genderCard', canvas: 'genderChart', title: 'Gender Wise Split' },
-        { id: 'urbanRuralCard', canvas: 'urbanRuralChart', title: 'Urban Rural Split' },
-        { id: 'nccsCard', canvas: 'nccsChart', title: 'NCCS Breakdown' },
-        { id: 'ageCard', canvas: 'ageChart', title: 'Age Wise Split' }
-      ];
-      const vis = chartDefs.filter(c => {
-        const card = document.getElementById(c.id);
-        return card && card.querySelector('.chart-container').style.display !== 'none';
+      // Screenshot the entire dashboard exactly as it appears
+      const canvas = await html2canvas(captureEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#F7F8FA',
+        logging: false,
+        windowWidth: 1400
       });
 
-      if (vis.length > 0) {
-        const gridTop = 25;
-        const gridBot = footerY - 2;
-        const gap = 4;
-        const cols = 2;
-        const rows = Math.ceil(vis.length / cols);
-        const boxW = (CW - gap) / cols;
-        const boxH = (gridBot - gridTop - gap * (rows - 1)) / rows;
+      // Determine orientation: fit content on 1 A4 page
+      const imgRatio = canvas.height / canvas.width;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const PW = 210, PH = 297, M = 5;
+      const CW = PW - M * 2;
+      let imgW = CW, imgH = CW * imgRatio;
 
-        vis.forEach((c, i) => {
-          const col = i % cols, row = Math.floor(i / cols);
-          const bx = M + col * (boxW + gap);
-          const by = gridTop + row * (boxH + gap);
-
-          // Card outline
-          pdf.setDrawColor(215); pdf.setLineWidth(0.3);
-          pdf.rect(bx, by, boxW, boxH, 'S');
-
-          // Title
-          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(30);
-          pdf.text(c.title, bx + 4, by + 6);
-
-          // Chart image — pull directly from Chart.js canvas
-          const el = document.getElementById(c.canvas);
-          if (el) {
-            const imgData = el.toDataURL('image/jpeg', 0.9);
-            const padX = 4, padTop = 10, padBot = 4;
-            const aw = boxW - padX * 2, ah = boxH - padTop - padBot;
-            const r = Math.min(aw / el.width, ah / el.height);
-            const dw = el.width * r, dh = el.height * r;
-            const dx = bx + padX + (aw - dw) / 2;
-            const dy = by + padTop + (ah - dh) / 2;
-            pdf.addImage(imgData, 'PNG', dx, dy, dw, dh);
-          }
-        });
+      // If too tall, scale down to fit page height
+      if (imgH > PH - M * 2) {
+        imgH = PH - M * 2;
+        imgW = imgH / imgRatio;
       }
 
+      const x = (PW - imgW) / 2;
+      const y = (PH - imgH) / 2;
+
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', x, y, imgW, imgH);
       pdf.save((selectedEvent || 'Dashboard') + ' - Viewership Report.pdf');
     } catch(e) {
       console.error('PDF export failed:', e);
