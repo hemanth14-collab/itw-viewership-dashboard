@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ITW Internal Viewership Repository</title>
+<title>ITW Core Viewership Repository</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -188,8 +188,8 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
     <div class="logo">
       <div class="logo-icon">ITW</div>
       <div>
-        <h1>ITW Internal Viewership Repository</h1>
-        <span>Sports Viewership Analytics Dashboard</span>
+        <h1>ITW Core Viewership Repository</h1>
+        <span>Internal Event Viewership Repository Dashboard for ITW</span>
       </div>
     </div>
     <div class="header-right">
@@ -518,7 +518,7 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
     } else { showChart(ac, false); }
   }
 
-  // Investor-ready PDF Export (A4 Portrait, 1-2 pages)
+  // PDF Export — compact header, 2×2 equal chart grid filling the page
   exportBtn.addEventListener('click', async () => {
     const overlay = document.getElementById('pdfOverlay');
     overlay.classList.add('show');
@@ -527,123 +527,99 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const PW = 210, PH = 297, M = 10;
-      const CW = PW - M * 2; // 190mm
-      const captureOpts = { scale: 2, useCORS: true, backgroundColor: '#FFFFFF', logging: false, windowWidth: 1200 };
+      const CW = PW - M * 2;
+      const d = getData(selectedEvent);
       const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      const src = d?.dataSource || 'N/A';
 
-      // ── Helpers ──
-      function fitImg(canvas, x, y, maxW, maxH) {
-        const rW = maxW / canvas.width, rH = maxH / canvas.height;
-        const r = Math.min(rW, rH);
-        const w = canvas.width * r, h = canvas.height * r;
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.8), 'JPEG', x, y, w, h);
-        return h;
-      }
+      // ── Header strip ──
+      pdf.setFillColor(232, 56, 13);
+      pdf.rect(0, 0, PW, 2, 'F');
 
-      // Place a chart canvas centered inside a fixed-size box
-      function placeChart(canvas, boxX, boxY, boxW, boxH) {
-        const rW = boxW / canvas.width, rH = boxH / canvas.height;
-        const r = Math.min(rW, rH);
-        const w = canvas.width * r, h = canvas.height * r;
-        const cx = boxX + (boxW - w) / 2, cy = boxY + (boxH - h) / 2;
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.8), 'JPEG', cx, cy, w, h);
-      }
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(26, 26, 46);
+      pdf.text(selectedEvent || '', M, 10);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(150);
+      pdf.text('ITW Core Viewership Repository  |  ' + dateStr, PW - M, 10, { align: 'right' });
 
-      function addPageHeader(title, pg, totalPg) {
-        // Red accent stripe
-        pdf.setFillColor(232, 56, 13);
-        pdf.rect(0, 0, PW, 2.5, 'F');
-        // Event name
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(26, 26, 46);
-        pdf.text(title, M, 11);
-        // Branding + page
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(140);
-        pdf.text('ITW Internal Viewership Repository  |  ' + dateStr + '  |  Page ' + pg + ' of ' + totalPg, PW - M, 11, { align: 'right' });
-        // Divider line below header
-        pdf.setDrawColor(230); pdf.setLineWidth(0.3);
-        pdf.line(M, 14, PW - M, 14);
-      }
+      // ── Key numbers — single compact line ──
+      const nums = [];
+      if (d.cumulativeViewership !== null) nums.push('Cumulative: ' + fmt(d.cumulativeViewership) + ' M');
+      if (d.reach !== null) nums.push('Reach: ' + fmt(d.reach) + ' M');
+      if (d.avgTVR !== null) nums.push('TVR: ' + d.avgTVR);
+      if (d.ltvReach !== null) nums.push('LTV Reach: ' + fmt(d.ltvReach) + ' M');
+      if (d.ottReach !== null) nums.push('OTT Reach: ' + fmt(d.ottReach) + ' M');
 
-      function addPageFooter() {
-        const src = getData(selectedEvent)?.dataSource || 'N/A';
-        pdf.setDrawColor(230); pdf.setLineWidth(0.3);
-        pdf.line(M, PH - 10, PW - M, PH - 10);
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(150);
-        pdf.text('Data Source: ' + src, M, PH - 6);
-        pdf.text('Confidential — For Internal Use Only', PW - M, PH - 6, { align: 'right' });
-      }
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5); pdf.setTextColor(70);
+      pdf.text(nums.join('    |    '), M, 16);
 
-      function addSectionTitle(y, title) {
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(80);
-        pdf.text(title.toUpperCase(), M, y);
-        pdf.setDrawColor(232, 56, 13); pdf.setLineWidth(0.5);
-        pdf.line(M, y + 1.5, M + 18, y + 1.5);
-        return y + 5;
-      }
+      // Broadcaster line
+      const bcast = [];
+      if (d.ltvBroadcaster) bcast.push('LTV: ' + d.ltvBroadcaster);
+      if (d.digitalBroadcaster) bcast.push('Digital: ' + d.digitalBroadcaster);
+      if (d.dataSource) bcast.push('Source: ' + d.dataSource);
 
-      // ── Detect visible charts ──
-      const genderCard = document.getElementById('genderCard');
-      const urbanCard = document.getElementById('urbanRuralCard');
-      const nccsCard = document.getElementById('nccsCard');
-      const ageCard = document.getElementById('ageCard');
-      const genderVis = genderCard.querySelector('.chart-container').style.display !== 'none';
-      const urbanVis = urbanCard.querySelector('.chart-container').style.display !== 'none';
-      const nccsVis = nccsCard.querySelector('.chart-container').style.display !== 'none';
-      const ageVis = ageCard.querySelector('.chart-container').style.display !== 'none';
-      const row1Charts = genderVis || urbanVis;
-      const row2Charts = nccsVis || ageVis;
-      const totalPages = (row1Charts && row2Charts) ? 2 : 1;
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5); pdf.setTextColor(130);
+      pdf.text(bcast.join('    \u2022    '), M, 20);
 
-      // ── Capture all sections ──
-      const capHeader = await html2canvas(document.querySelector('.event-header'), captureOpts);
-      const capMetrics = await html2canvas(document.querySelector('.metrics-grid'), captureOpts);
-      const capReach = await html2canvas(document.querySelector('.reach-section'), captureOpts);
-      const capGender = genderVis ? await html2canvas(genderCard, captureOpts) : null;
-      const capUrban = urbanVis ? await html2canvas(urbanCard, captureOpts) : null;
-      const capNccs = nccsVis ? await html2canvas(nccsCard, captureOpts) : null;
-      const capAge = ageVis ? await html2canvas(ageCard, captureOpts) : null;
+      // Divider
+      pdf.setDrawColor(220); pdf.setLineWidth(0.3);
+      pdf.line(M, 23, PW - M, 23);
 
-      // ── PAGE 1 ──
-      addPageHeader(selectedEvent || '', 1, totalPages);
-      let y = 16;
+      // ── Footer (draw now so charts know the boundary) ──
+      const footerY = PH - 8;
+      pdf.setDrawColor(220); pdf.setLineWidth(0.2);
+      pdf.line(M, footerY, PW - M, footerY);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6); pdf.setTextColor(155);
+      pdf.text('Data Source: ' + src, M, footerY + 4);
+      pdf.text('Confidential \u2014 For Internal Use Only', PW - M, footerY + 4, { align: 'right' });
 
-      // Event header (badges)
-      y += fitImg(capHeader, M, y, CW, 22) + 3;
+      // ── Charts — 2×2 equal grid filling the page ──
+      const chartDefs = [
+        { id: 'genderCard', canvas: 'genderChart', title: 'Gender Wise Split' },
+        { id: 'urbanRuralCard', canvas: 'urbanRuralChart', title: 'Urban Rural Split' },
+        { id: 'nccsCard', canvas: 'nccsChart', title: 'NCCS Breakdown' },
+        { id: 'ageCard', canvas: 'ageChart', title: 'Age Wise Split' }
+      ];
+      const vis = chartDefs.filter(c => {
+        const card = document.getElementById(c.id);
+        return card && card.querySelector('.chart-container').style.display !== 'none';
+      });
 
-      // Key Metrics
-      y = addSectionTitle(y, 'Key Metrics');
-      y += fitImg(capMetrics, M, y, CW, 52) + 3;
+      if (vis.length > 0) {
+        const gridTop = 25;
+        const gridBot = footerY - 2;
+        const gap = 4;
+        const cols = 2;
+        const rows = Math.ceil(vis.length / cols);
+        const boxW = (CW - gap) / cols;
+        const boxH = (gridBot - gridTop - gap * (rows - 1)) / rows;
 
-      // Platform Reach
-      y = addSectionTitle(y, 'Platform Reach');
-      y += fitImg(capReach, M, y, CW, 24) + 4;
+        vis.forEach((c, i) => {
+          const col = i % cols, row = Math.floor(i / cols);
+          const bx = M + col * (boxW + gap);
+          const by = gridTop + row * (boxH + gap);
 
-      // Charts row 1: Gender + Urban/Rural
-      if (row1Charts) {
-        y = addSectionTitle(y, 'Linear TV Reach Summary');
-        const chartW = (CW - 6) / 2; // equal width for both charts
-        const chartH = PH - y - 14; // fill remaining page to footer
+          // Card outline
+          pdf.setDrawColor(215); pdf.setLineWidth(0.3);
+          pdf.rect(bx, by, boxW, boxH, 'S');
 
-        if (capGender) placeChart(capGender, M, y, chartW, chartH);
-        if (capUrban) placeChart(capUrban, M + chartW + 6, y, chartW, chartH);
-      }
+          // Title
+          pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); pdf.setTextColor(30);
+          pdf.text(c.title, bx + 4, by + 6);
 
-      addPageFooter();
-
-      // ── PAGE 2 (only if NCCS / Age charts exist) ──
-      if (row2Charts) {
-        pdf.addPage('a4', 'portrait');
-        addPageHeader(selectedEvent || '', 2, totalPages);
-        let y2 = 16;
-
-        y2 = addSectionTitle(y2, 'NCCS & Age Demographics');
-        const chartW = (CW - 6) / 2;
-        const chartH = PH - y2 - 14; // fill page to footer
-
-        if (capNccs) placeChart(capNccs, M, y2, chartW, chartH);
-        if (capAge) placeChart(capAge, M + chartW + 6, y2, chartW, chartH);
-
-        addPageFooter();
+          // Chart image — pull directly from Chart.js canvas
+          const el = document.getElementById(c.canvas);
+          if (el) {
+            const imgData = el.toDataURL('image/jpeg', 0.9);
+            const padX = 4, padTop = 10, padBot = 4;
+            const aw = boxW - padX * 2, ah = boxH - padTop - padBot;
+            const r = Math.min(aw / el.width, ah / el.height);
+            const dw = el.width * r, dh = el.height * r;
+            const dx = bx + padX + (aw - dw) / 2;
+            const dy = by + padTop + (ah - dh) / 2;
+            pdf.addImage(imgData, 'PNG', dx, dy, dw, dh);
+          }
+        });
       }
 
       pdf.save((selectedEvent || 'Dashboard') + ' - Viewership Report.pdf');

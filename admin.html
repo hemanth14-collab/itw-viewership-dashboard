@@ -367,7 +367,7 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   }
 
   function buildDataJS(all) {
-    let js = '/*\n * ITW Internal Viewership Repository - Event Data\n * All viewership/reach numbers are in MILLIONS.\n * Use null for unavailable data.\n */\n\nconst EVENT_DATA = {\n';
+    let js = '/*\n * ITW Core Viewership Repository - Event Data\n * All viewership/reach numbers are in MILLIONS.\n * Use null for unavailable data.\n */\n\nconst EVENT_DATA = {\n';
     const names = Object.keys(all).sort();
     names.forEach((name, idx) => { const d = all[name];
       js += '\n  ' + JSON.stringify(name) + ': {\n    ltvBroadcaster: ' + JSON.stringify(d.ltvBroadcaster) + ',\n    digitalBroadcaster: ' + JSON.stringify(d.digitalBroadcaster) + ',\n    dataSource: ' + JSON.stringify(d.dataSource) + ',\n    cumulativeViewership: ' + d.cumulativeViewership + ',\n    reach: ' + d.reach + ',\n    avgTVR: ' + d.avgTVR + ',\n    ltvReach: ' + d.ltvReach + ',\n    ottReach: ' + d.ottReach + ',\n';

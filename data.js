@@ -1,5 +1,5 @@
 /*
- * ITW Internal Viewership Repository - Event Data
+ * ITW Core Viewership Repository - Event Data
  * All viewership/reach numbers are in MILLIONS.
  * Use null for unavailable data.
  */
