@@ -330,10 +330,10 @@ const EVENT_DATA = {
     avgTVR: 0.59,
     ltvReach: 149,
     ottReach: 170,
-    gender: null,
-    urbanRural: null,
-    nccs: null,
-    age: null
+    gender: { male: 0.55, female: 0.45 },
+    urbanRural: { urban: 0.45, rural: 0.55 },
+    nccs: { a: 0.29, b: 0.34, cde: 0.36 },
+    age: { "<15": 0.23, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.16 }
   },
 
   "WPL-2026": {
