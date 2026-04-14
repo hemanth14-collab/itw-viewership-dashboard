@@ -533,5 +533,19 @@
       "41-50": 0.14,
       "50+": 0.17
     }
+  },
+  "ICC Men's T20 World Cup 2026": {
+    "ltvBroadcaster": null,
+    "digitalBroadcaster": null,
+    "dataSource": null,
+    "cumulativeViewership": null,
+    "reach": null,
+    "avgTVR": null,
+    "ltvReach": null,
+    "ottReach": null,
+    "gender": null,
+    "urbanRural": null,
+    "nccs": null,
+    "age": null
   }
 }
