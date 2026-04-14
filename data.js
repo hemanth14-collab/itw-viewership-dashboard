@@ -321,6 +321,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "Ultimate Table Tennis 2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar Data",
+    cumulativeViewership: 35,
+    reach: 14.34,
+    avgTVR: 0.01,
+    ltvReach: 6.34,
+    ottReach: 8,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.51, rural: 0.49 },
+    nccs: { a: 0.27, b: 0.36, cde: 0.37 },
+    age: { "<15": 0.21, "15-21": 0.15, "22-40": 0.35, "41-50": 0.13, "50+": 0.16 }
+  },
+
   "WPL-2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
