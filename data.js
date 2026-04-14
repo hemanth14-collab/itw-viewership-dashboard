@@ -306,21 +306,6 @@ const EVENT_DATA = {
     age: null
   },
 
-  "Ultimate Table Tennis": {
-    ltvBroadcaster: null,
-    digitalBroadcaster: null,
-    dataSource: null,
-    cumulativeViewership: null,
-    reach: null,
-    avgTVR: null,
-    ltvReach: null,
-    ottReach: null,
-    gender: null,
-    urbanRural: null,
-    nccs: null,
-    age: null
-  },
-
   "Ultimate Table Tennis 2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
