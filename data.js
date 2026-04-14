@@ -153,7 +153,7 @@ const EVENT_DATA = {
     gender: { male: 0.56, female: 0.44 },
     urbanRural: { urban: 0.59, rural: 0.41 },
     nccs: { a: 0.35, b: 0.33, cde: 0.31 },
-    age: null
+    age: { "<15": 0.23, "15-21": 0.14, "22-40": 0.34, "41-50": 0.13, "50+": 0.16 }
   },
 
   "Ind v NZ 2025 ODI (Men's)": {
