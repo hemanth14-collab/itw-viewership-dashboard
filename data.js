@@ -21,6 +21,21 @@ const EVENT_DATA = {
     age: { "<15": 0.23, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.16 }
   },
 
+  "Aus v Ind 2026 ODI (Women's)": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
   "ICC Men's T20 WC 2024": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
