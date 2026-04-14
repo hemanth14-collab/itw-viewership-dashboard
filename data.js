@@ -36,6 +36,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "ICC Men's T20 World Cup 2026": {
+    ltvBroadcaster: null,
+    digitalBroadcaster: null,
+    dataSource: null,
+    cumulativeViewership: null,
+    reach: null,
+    avgTVR: null,
+    ltvReach: null,
+    ottReach: null,
+    gender: null,
+    urbanRural: null,
+    nccs: null,
+    age: null
+  },
+
   "ICC WCWC-2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
