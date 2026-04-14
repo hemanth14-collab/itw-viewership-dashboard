@@ -142,18 +142,18 @@ const EVENT_DATA = {
   },
 
   "Ind v Aus 2025 ODI (Women's)": {
-    ltvBroadcaster: null,
-    digitalBroadcaster: null,
-    dataSource: null,
-    cumulativeViewership: null,
-    reach: null,
-    avgTVR: null,
-    ltvReach: null,
-    ottReach: null,
-    gender: null,
-    urbanRural: null,
-    nccs: null,
-    age: null
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT estimates based on JioHotstar",
+    cumulativeViewership: 56.5,
+    reach: 18.6,
+    avgTVR: 0.06,
+    ltvReach: 14.6,
+    ottReach: 4,
+    gender: { male: 0.57, female: 0.43 },
+    urbanRural: { urban: 0.53, rural: 0.47 },
+    nccs: { a: 0.33, b: 0.34, cde: 0.33 },
+    age: { "<15": 0.19, "15-21": 0.13, "22-40": 0.32, "41-50": 0.03, "50+": 0.33 }
   },
 
   "Ind v Aus 2025 T20I (Men's)": {
