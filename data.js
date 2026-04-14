@@ -216,21 +216,6 @@ const EVENT_DATA = {
     age: { "<15": 0.21, "15-21": 0.14, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
   },
 
-  "Ind v SL 2025 ODI (Women's)": {
-    ltvBroadcaster: null,
-    digitalBroadcaster: null,
-    dataSource: null,
-    cumulativeViewership: null,
-    reach: null,
-    avgTVR: null,
-    ltvReach: null,
-    ottReach: null,
-    gender: null,
-    urbanRural: null,
-    nccs: null,
-    age: null
-  },
-
   "Ind v SL 2025 T20Is (Women's)": {
     ltvBroadcaster: null,
     digitalBroadcaster: null,
