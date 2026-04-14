@@ -50,6 +50,16 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
 /* Main */
 .main{max-width:1400px;margin:0 auto;padding:32px}
 
+/* Internal Note (not exported to PDF) */
+.internal-note{background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%);border:1px solid #FDE68A;border-left:4px solid #F59E0B;border-radius:var(--radius);padding:20px 24px;margin-bottom:28px;box-shadow:var(--shadow-sm);max-width:1400px}
+.internal-note-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.internal-note-header svg{width:20px;height:20px;color:#B45309;flex-shrink:0}
+.internal-note-title{font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:1.2px}
+.internal-note ol{margin:0;padding-left:22px;color:#78350F}
+.internal-note ol li{font-size:14px;line-height:1.65;margin-bottom:8px;font-weight:500}
+.internal-note ol li:last-child{margin-bottom:0}
+.internal-note ol li strong{color:#92400E;font-weight:700}
+
 /* Event Selector */
 .selector-section{margin-bottom:36px}
 .selector-label{font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
@@ -174,7 +184,7 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
 
 /* Print / PDF - hide interactive elements */
 @media print{
-  .header,.selector-section,.dropdown-clear,.pdf-overlay{display:none!important}
+  .header,.selector-section,.dropdown-clear,.pdf-overlay,.internal-note{display:none!important}
   .dashboard{display:block!important}
   body{background:#fff}
   .main{padding:0}
@@ -214,6 +224,21 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
 </div>
 
 <main class="main">
+  <!-- Internal Note (hidden from PDF export) -->
+  <div class="internal-note">
+    <div class="internal-note-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="internal-note-title">Internal Note</div>
+    </div>
+    <ol>
+      <li>The Repository currently contains data for major sporting events up till 2025. Major events such as ICC Events, ACC Events, IPL, WPL, have been included until 2023.</li>
+      <li><strong>For on-going events, expect the complete data to be available 2 weeks after the event's last date.</strong></li>
+      <li>Some events do not have the entire data available, you will find 'No data available' against those sections.</li>
+      <li>If you wish to share a snapshot of the report to a client/brand/external stakeholder, you can do so by using the 'Export to PDF' function.</li>
+      <li>For any further queries or data splits you may need for your request, please drop an email marking the emails of the ITW Core team members.</li>
+    </ol>
+  </div>
+
   <!-- Event Selector -->
   <div class="selector-section">
     <div class="selector-label">Select Your Event</div>
