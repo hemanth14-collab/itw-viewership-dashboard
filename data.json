@@ -462,20 +462,6 @@
     "nccs": null,
     "age": null
   },
-  "Ultimate Table Tennis": {
-    "ltvBroadcaster": null,
-    "digitalBroadcaster": null,
-    "dataSource": null,
-    "cumulativeViewership": null,
-    "reach": null,
-    "avgTVR": null,
-    "ltvReach": null,
-    "ottReach": null,
-    "gender": null,
-    "urbanRural": null,
-    "nccs": null,
-    "age": null
-  },
   "Namibia ICC T20 WC": {
     "ltvBroadcaster": "Star Sports",
     "digitalBroadcaster": "JioHotstar",
