@@ -37,18 +37,18 @@ const EVENT_DATA = {
   },
 
   "ICC Men's T20 World Cup 2026": {
-    ltvBroadcaster: null,
-    digitalBroadcaster: null,
-    dataSource: null,
-    cumulativeViewership: null,
-    reach: null,
-    avgTVR: null,
-    ltvReach: null,
-    ottReach: null,
-    gender: null,
-    urbanRural: null,
-    nccs: null,
-    age: null
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 10889,
+    reach: 1764,
+    avgTVR: 1.73,
+    ltvReach: 367.9,
+    ottReach: 1397,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.3, b: 0.33, cde: 0.37 },
+    age: { "<15": 0.24, "15-21": 0.14, "22-40": 0.34, "41-50": 0.13, "50+": 0.16 }
   },
 
   "ICC WCWC-2025": {
