@@ -118,7 +118,12 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   document.getElementById('pwSubmit').addEventListener('click',async()=>{
     const v=document.getElementById('pwInput').value;
     const h=await sha256(v);
-    if(h===HASH){sessionStorage.setItem('itw_admin_auth','1');document.getElementById('passwordGate').style.display='none';}
+    if(h===HASH){
+      sessionStorage.setItem('itw_admin_auth','1');
+      sessionStorage.setItem('itw_admin_pw',v);
+      document.getElementById('passwordGate').style.display='none';
+      window.dispatchEvent(new CustomEvent('itw-admin-unlocked'));
+    }
     else{document.getElementById('pwError').style.display='block';document.getElementById('pwInput').style.borderColor='#DC2626';document.getElementById('pwInput').value='';document.getElementById('pwInput').focus();}
   });
   document.getElementById('pwInput').addEventListener('keydown',(e)=>{if(e.key==='Enter')document.getElementById('pwSubmit').click();});
@@ -140,7 +145,7 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     <h3>Auto-Publish Enabled</h3>
     <p>
       Edit data and click <strong>"Save &amp; Publish"</strong>. Changes are automatically pushed to GitHub and go live for all users within ~60 seconds.<br>
-      First-time setup: Go to the <strong>Settings</strong> tab to connect your GitHub account (one-time).
+      <strong>Anyone with the admin password can publish</strong> — no per-user GitHub setup required. (Owner: see <strong>Settings</strong> for one-time setup.)
     </p>
   </div>
 
@@ -189,18 +194,14 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 
   <div class="panel" id="panel-settings">
     <div class="settings-section">
-      <h3>GitHub Connection</h3>
+      <h3>One-Time Setup (Owner Only)</h3>
       <p>
-        Connect to your GitHub repository so changes auto-publish when you save. You need a
-        <strong>Personal Access Token (classic)</strong> with <code>repo</code> scope, or a fine-grained token with <strong>Contents: Read and write</strong> permission.
+        This is a one-time setup performed by the repository owner. Once complete, <strong>any teammate with the admin password can save and publish data</strong> — they don't need their own GitHub account or token.
       </p>
-      <div class="form-row full">
-        <div class="form-group">
-          <label>GitHub Personal Access Token</label>
-          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-          <div class="hint">Generate at: GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; <strong>Tokens (classic)</strong> &rarr; Generate new token (classic) &rarr; check <strong>repo</strong> scope. Do NOT use "Fine-grained tokens" unless you also grant Contents: Read and write.</div>
-        </div>
-      </div>
+      <p>
+        How it works: You paste a GitHub Personal Access Token below. The browser encrypts it with your admin password (PBKDF2-SHA256 + AES-GCM-256) and commits the encrypted blob to the repo as <code>gh.enc.json</code>. From then on, every admin panel load fetches that blob, and decrypts it in memory only after the correct admin password is entered. The plain token never leaves browser memory and never touches localStorage.
+      </p>
+      <div id="setupStatus" class="test-result" style="display:block;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;margin-bottom:16px"></div>
       <div class="form-row">
         <div class="form-group">
           <label>Repository Owner</label>
@@ -217,12 +218,24 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
           <input type="text" id="ghBranch" value="main" placeholder="main">
         </div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="ghSaveBtn">Save Settings</button>
-        <button class="btn btn-success" id="ghTestBtn">Test Connection</button>
-        <button class="btn btn-outline" id="ghClearBtn">Disconnect</button>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>GitHub Personal Access Token (classic, <code>repo</code> scope)</label>
+          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <div class="hint">Generate at: GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; <strong>Tokens (classic)</strong> &rarr; Generate new token (classic) &rarr; check <strong>repo</strong> scope. This token is encrypted with your admin password before being committed to the repo — it is never stored in plain text anywhere.</div>
+        </div>
       </div>
-      <div class="test-result" id="ghTestResult"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="setupBtn">Encrypt &amp; Save to Repo</button>
+        <button class="btn btn-success" id="setupTestBtn">Test Token</button>
+      </div>
+      <div class="test-result" id="setupResult"></div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Repository Settings (Read-Only)</h3>
+      <p>These are the values currently used for publishing. Change them in the form above and re-run setup if needed.</p>
+      <div id="repoStatusReadOnly" style="font-size:13px;color:var(--text-secondary);line-height:1.8"></div>
     </div>
   </div>
 </main>
@@ -232,33 +245,74 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 <script src="data.js"></script>
 <script>
 (async function() {
-  // ── GitHub API helpers ──
-  const GH_KEY = 'itw_gh_config';
+  // ── Encrypted token + GitHub API helpers ──
+  // The GitHub PAT is encrypted with the admin password and stored in the repo
+  // as gh.enc.json. After the password gate, the blob is decrypted in memory.
+  const REPO_DEFAULTS = { owner: 'hemanth14-collab', repo: 'itw-viewership-dashboard', branch: 'main' };
+  const REPO_KEY = 'itw_repo_config';
+  const ENC_FILE = 'gh.enc.json';
 
-  function getGH() {
-    try { return JSON.parse(localStorage.getItem(GH_KEY) || '{}'); } catch(e) { return {}; }
+  let TOKEN_BLOB = null;          // encrypted blob {v,salt,iv,data}
+  let DECRYPTED_TOKEN = null;     // plaintext PAT, lives only in memory
+  let REPO_CFG = (() => { try { return { ...REPO_DEFAULTS, ...JSON.parse(localStorage.getItem(REPO_KEY) || '{}') }; } catch(e) { return { ...REPO_DEFAULTS }; } })();
+
+  // ── Crypto helpers (Web Crypto API) ──
+  function b64encode(bytes) { let s = ''; for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s); }
+  function b64decode(b64) { const s = atob(b64); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
+
+  async function deriveKey(password, salt) {
+    const enc = new TextEncoder();
+    const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256' },
+      km,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
   }
-  function ghOk() { const c = getGH(); return !!(c.token && c.owner && c.repo); }
 
-  async function ghAPI(path, opts = {}) {
-    const c = getGH();
-    const headers = { 'Authorization': 'token ' + c.token, 'Accept': 'application/vnd.github.v3+json', ...(opts.headers || {}) };
+  async function encryptToken(token, password) {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKey(password, salt);
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(token));
+    return { v: 1, salt: b64encode(salt), iv: b64encode(iv), data: b64encode(new Uint8Array(ct)) };
+  }
+
+  async function decryptToken(blob, password) {
+    const dec = new TextDecoder();
+    const salt = b64decode(blob.salt);
+    const iv = b64decode(blob.iv);
+    const data = b64decode(blob.data);
+    const key = await deriveKey(password, salt);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+    return dec.decode(pt);
+  }
+
+  // ── GitHub API (uses in-memory decrypted token) ──
+  function tokenReady() { return !!DECRYPTED_TOKEN; }
+
+  async function ghAPI(path, opts = {}, tokenOverride) {
+    const tok = tokenOverride || DECRYPTED_TOKEN;
+    if (!tok) throw new Error('No GitHub token available. Setup required.');
+    const headers = { 'Authorization': 'token ' + tok, 'Accept': 'application/vnd.github.v3+json', ...(opts.headers || {}) };
     if (opts.body) headers['Content-Type'] = 'application/json';
-    const res = await fetch('https://api.github.com' + path, { ...opts, headers });
-    return res;
+    return fetch('https://api.github.com' + path, { ...opts, headers });
   }
 
-  async function ghGetFile(filePath) {
-    const c = getGH();
-    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath + '?ref=' + (c.branch || 'main'));
+  async function ghGetFile(filePath, tokenOverride) {
+    const c = REPO_CFG;
+    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath + '?ref=' + (c.branch || 'main'), {}, tokenOverride);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error('GitHub API error: ' + res.status);
     return await res.json();
   }
 
-  async function ghPutFile(filePath, content, message) {
-    const c = getGH();
-    const existing = await ghGetFile(filePath);
+  async function ghPutFile(filePath, content, message, tokenOverride) {
+    const c = REPO_CFG;
+    const existing = await ghGetFile(filePath, tokenOverride);
     const body = {
       message: message,
       content: btoa(unescape(encodeURIComponent(content))),
@@ -267,13 +321,47 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     if (existing) body.sha = existing.sha;
     const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath, {
       method: 'PUT', body: JSON.stringify(body)
-    });
+    }, tokenOverride);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.message || 'GitHub API error: ' + res.status);
     }
     return await res.json();
   }
+
+  // ── Load encrypted token blob from repo (no auth required to read public file) ──
+  async function loadTokenBlob() {
+    try {
+      const res = await fetch(ENC_FILE + '?v=' + Date.now());
+      if (res.ok) {
+        TOKEN_BLOB = await res.json();
+      }
+    } catch(e) { /* file may not exist yet — owner needs to run setup */ }
+  }
+
+  // ── Decrypt the token using the password from sessionStorage ──
+  async function unlockToken() {
+    if (!TOKEN_BLOB) return false;
+    const pw = sessionStorage.getItem('itw_admin_pw');
+    if (!pw) return false;
+    try {
+      DECRYPTED_TOKEN = await decryptToken(TOKEN_BLOB, pw);
+      return true;
+    } catch(e) {
+      console.warn('Token decryption failed — admin password may not match the one used during setup.');
+      return false;
+    }
+  }
+
+  // ── Listen for password-gate unlock event BEFORE any awaits, so we never miss it ──
+  let pendingUnlockAttempt = false;
+  window.addEventListener('itw-admin-unlocked', async () => {
+    // If TOKEN_BLOB hasn't loaded yet, mark a pending attempt; loadTokenBlob will retry
+    pendingUnlockAttempt = true;
+    await unlockToken();
+    updateGHStatus();
+    if (typeof window.refreshSetupPanel === 'function') window.refreshSetupPanel();
+  });
 
   // ── Fetch latest data from GitHub on page load ──
   try {
@@ -284,6 +372,12 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
       Object.assign(EVENT_DATA, freshData);
     }
   } catch(e) { /* use bundled data.js */ }
+
+  // ── Fetch encrypted token blob and try to decrypt with stored password ──
+  await loadTokenBlob();
+  if (sessionStorage.getItem('itw_admin_auth') === '1' || pendingUnlockAttempt) {
+    await unlockToken();
+  }
 
   // ── Data helpers ──
   function getAllData() {
@@ -296,17 +390,20 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   function hasData(d) { return d && (d.cumulativeViewership !== null || d.reach !== null || d.avgTVR !== null); }
   function showToast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 4000); }
 
-  // ── GitHub status bar ──
+  // ── Publish status bar ──
+  function ghOk() { return tokenReady(); }
   function updateGHStatus() {
     const bar = document.getElementById('ghStatusBar');
     const text = document.getElementById('ghStatusText');
-    if (ghOk()) {
-      const c = getGH();
+    if (tokenReady()) {
       bar.className = 'gh-status-bar connected';
-      text.textContent = 'Connected to ' + c.owner + '/' + c.repo + ' (' + (c.branch || 'main') + ')';
+      text.textContent = 'Ready to publish — connected to ' + REPO_CFG.owner + '/' + REPO_CFG.repo + ' (' + (REPO_CFG.branch || 'main') + ')';
+    } else if (TOKEN_BLOB) {
+      bar.className = 'gh-status-bar disconnected';
+      text.textContent = 'Encrypted token found, but decryption failed. Re-enter the admin password (refresh page) to retry.';
     } else {
       bar.className = 'gh-status-bar disconnected';
-      text.textContent = 'GitHub not connected. Go to Settings to configure.';
+      text.textContent = 'Publish token not configured. Owner: go to Settings to run one-time setup.';
     }
   }
   updateGHStatus();
@@ -423,12 +520,13 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
       saveBtn.disabled = false;
       saveBtn.innerHTML = 'Save &amp; Publish';
     } else {
-      // No GitHub config — save locally and warn
+      // Token not ready — save to local override and warn
       const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
       overrides[name] = entry;
       localStorage.setItem('itw_overrides', JSON.stringify(overrides));
       populateDatalist();
-      showToast('Saved locally only. Connect GitHub in Settings to publish.', 'error');
+      const reason = TOKEN_BLOB ? 'Decryption failed (admin password mismatch).' : 'Setup not yet run.';
+      showToast('Saved locally only. ' + reason + ' Owner: see Settings tab.', 'error');
     }
   });
 
@@ -460,7 +558,8 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
           delete overrides[name];
           localStorage.setItem('itw_overrides', JSON.stringify(overrides));
           if (EVENT_DATA[name]) delete EVENT_DATA[name];
-          showToast('Deleted locally. Connect GitHub to publish.');
+          const reason = TOKEN_BLOB ? 'Decryption failed (admin password mismatch).' : 'Setup not yet run.';
+          showToast('Deleted locally only. ' + reason, 'error');
         }
         populateDatalist();
         renderManageList();
@@ -477,116 +576,101 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   document.getElementById('copyExportBtn').addEventListener('click', () => { const a = document.getElementById('exportArea'); a.select(); navigator.clipboard.writeText(a.value).then(() => showToast('Copied!')).catch(() => { document.execCommand('copy'); showToast('Copied!'); }); });
   document.getElementById('downloadExportBtn').addEventListener('click', () => { const b = new Blob([document.getElementById('exportArea').value], { type: 'text/javascript' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'data.js'; a.click(); URL.revokeObjectURL(a.href); showToast('Downloaded!'); });
 
-  // ── Settings ──
+  // ── Settings panel: One-time setup wizard ──
   function loadGHSettings() {
-    const c = getGH();
-    document.getElementById('ghToken').value = c.token || '';
-    document.getElementById('ghOwner').value = c.owner || '';
-    document.getElementById('ghRepo').value = c.repo || '';
-    document.getElementById('ghBranch').value = c.branch || 'main';
+    document.getElementById('ghOwner').value = REPO_CFG.owner || '';
+    document.getElementById('ghRepo').value = REPO_CFG.repo || '';
+    document.getElementById('ghBranch').value = REPO_CFG.branch || 'main';
+    refreshSetupPanel();
   }
 
-  document.getElementById('ghSaveBtn').addEventListener('click', () => {
-    const config = {
-      token: document.getElementById('ghToken').value.trim(),
-      owner: document.getElementById('ghOwner').value.trim(),
-      repo: document.getElementById('ghRepo').value.trim(),
-      branch: document.getElementById('ghBranch').value.trim() || 'main'
-    };
-    if (!config.token || !config.owner || !config.repo) {
-      showToast('Please fill in token, owner, and repo name.', 'error'); return;
+  window.refreshSetupPanel = function refreshSetupPanel() {
+    const status = document.getElementById('setupStatus');
+    const ro = document.getElementById('repoStatusReadOnly');
+    if (!status || !ro) return;
+    if (TOKEN_BLOB && tokenReady()) {
+      status.style.background = '#ECFDF5'; status.style.color = '#065F46'; status.style.borderColor = '#A7F3D0';
+      status.innerHTML = '<strong>Setup complete.</strong> Encrypted token loaded and successfully decrypted with the current admin password. Anyone with the admin password can now Save &amp; Publish without any further configuration. Re-running setup below will overwrite the existing encrypted blob.';
+    } else if (TOKEN_BLOB) {
+      status.style.background = '#FEF2F2'; status.style.color = '#991B1B'; status.style.borderColor = '#FECACA';
+      status.innerHTML = '<strong>Encrypted token found, but decryption failed.</strong> The current admin password does not match the password used during the original setup. Re-run setup below with the new admin password (this overwrites the old blob).';
+    } else {
+      status.style.background = '#FEF3C7'; status.style.color = '#92400E'; status.style.borderColor = '#FDE68A';
+      status.innerHTML = '<strong>Setup not yet run.</strong> No <code>gh.enc.json</code> file found in the repo. As the owner, fill in the form below and click <strong>Encrypt &amp; Save to Repo</strong> once. After that, teammates only need the admin password.';
     }
-    localStorage.setItem(GH_KEY, JSON.stringify(config));
-    updateGHStatus();
-    showToast('GitHub settings saved!');
-  });
+    ro.innerHTML = 'Owner: <strong>' + REPO_CFG.owner + '</strong><br>Repo: <strong>' + REPO_CFG.repo + '</strong><br>Branch: <strong>' + REPO_CFG.branch + '</strong><br>Encrypted token file: <strong>' + ENC_FILE + '</strong> (' + (TOKEN_BLOB ? 'present' : 'missing') + ')<br>In-memory token: <strong>' + (tokenReady() ? 'decrypted' : 'not loaded') + '</strong>';
+  };
 
-  document.getElementById('ghTestBtn').addEventListener('click', async () => {
-    const result = document.getElementById('ghTestResult');
-    const btn = document.getElementById('ghTestBtn');
-    btn.disabled = true; btn.textContent = 'Testing...';
+  function persistRepoCfg() {
+    REPO_CFG.owner = document.getElementById('ghOwner').value.trim() || REPO_DEFAULTS.owner;
+    REPO_CFG.repo = document.getElementById('ghRepo').value.trim() || REPO_DEFAULTS.repo;
+    REPO_CFG.branch = document.getElementById('ghBranch').value.trim() || 'main';
+    localStorage.setItem(REPO_KEY, JSON.stringify(REPO_CFG));
+  }
 
-    const config = {
-      token: document.getElementById('ghToken').value.trim(),
-      owner: document.getElementById('ghOwner').value.trim(),
-      repo: document.getElementById('ghRepo').value.trim(),
-      branch: document.getElementById('ghBranch').value.trim() || 'main'
-    };
-    if (!config.token || !config.owner || !config.repo) {
-      result.className = 'test-result fail'; result.textContent = 'Please fill in all fields first.';
-      btn.disabled = false; btn.textContent = 'Test Connection'; return;
-    }
-    localStorage.setItem(GH_KEY, JSON.stringify(config));
-    updateGHStatus();
+  // Encrypt & Save: encrypts the PAT with the admin password and commits the blob
+  document.getElementById('setupBtn').addEventListener('click', async () => {
+    const result = document.getElementById('setupResult');
+    const btn = document.getElementById('setupBtn');
+    const token = document.getElementById('ghToken').value.trim();
+    if (!token) { result.className = 'test-result fail'; result.textContent = 'Please paste a GitHub Personal Access Token first.'; return; }
+    const pw = sessionStorage.getItem('itw_admin_pw');
+    if (!pw) { result.className = 'test-result fail'; result.textContent = 'Admin password not in session. Please reload the page and re-enter the password.'; return; }
+    persistRepoCfg();
 
+    btn.disabled = true; btn.textContent = 'Encrypting & committing...';
     try {
-      // Step 1: Check repo access
-      const res = await ghAPI('/repos/' + config.owner + '/' + config.repo);
-      const scopes = res.headers.get('x-oauth-scopes') || '';
-      const tokenType = scopes ? 'classic' : 'fine-grained';
+      // 1) Encrypt the token client-side
+      const blob = await encryptToken(token, pw);
+      const blobJson = JSON.stringify(blob, null, 2);
 
-      if (res.status === 401) {
-        result.className = 'test-result fail'; result.textContent = 'Invalid token. The token was rejected by GitHub.';
-        btn.disabled = false; btn.textContent = 'Test Connection'; return;
-      }
-      if (res.status === 404) {
-        result.className = 'test-result fail'; result.textContent = 'Repository not found. Check owner/repo name, or the token may not have access to this repo.';
-        btn.disabled = false; btn.textContent = 'Test Connection'; return;
-      }
-      if (!res.ok) {
-        result.className = 'test-result fail'; result.textContent = 'Error: HTTP ' + res.status;
-        btn.disabled = false; btn.textContent = 'Test Connection'; return;
-      }
+      // 2) Commit the encrypted blob using the just-pasted PAT (one-time use)
+      await ghPutFile(ENC_FILE, blobJson, 'Configure encrypted publish token (admin setup)', token);
 
-      const repo = await res.json();
-      const canPush = repo.permissions && repo.permissions.push;
-
-      // Step 2: Check scopes for classic tokens
-      if (tokenType === 'classic' && !scopes.includes('repo')) {
-        result.className = 'test-result fail';
-        result.innerHTML = 'Token is a <strong>classic</strong> token but is missing the <strong>repo</strong> scope. Scopes found: <code>' + (scopes || 'none') + '</code>. Please regenerate with the <strong>repo</strong> scope checked.';
-        btn.disabled = false; btn.textContent = 'Test Connection'; return;
-      }
-
-      // Step 3: Try reading a file to verify contents access
-      let writeTest = 'not tested';
-      try {
-        const fileRes = await ghAPI('/repos/' + config.owner + '/' + config.repo + '/contents/data.json?ref=' + (config.branch || 'main'));
-        if (fileRes.status === 403) {
-          writeTest = 'blocked';
-        } else {
-          writeTest = 'ok';
-        }
-      } catch(e) { writeTest = 'error'; }
-
-      if (writeTest === 'blocked') {
-        result.className = 'test-result fail';
-        result.innerHTML = 'Token type: <strong>' + tokenType + '</strong>. Can see repo but <strong>cannot access file contents</strong>. ';
-        if (tokenType === 'fine-grained') {
-          result.innerHTML += 'For fine-grained tokens, go to token settings and add <strong>Contents: Read and write</strong> permission for this repository.';
-        } else {
-          result.innerHTML += 'Please regenerate with the <strong>repo</strong> scope.';
-        }
-        btn.disabled = false; btn.textContent = 'Test Connection'; return;
-      }
+      // 3) Cache it in memory and clear the token input
+      TOKEN_BLOB = blob;
+      DECRYPTED_TOKEN = token;
+      document.getElementById('ghToken').value = '';
 
       result.className = 'test-result ok';
-      result.innerHTML = 'All checks passed!<br>Repository: <strong>' + repo.full_name + '</strong> (' + (repo.private ? 'private' : 'public') + ')<br>Token type: <strong>' + tokenType + '</strong>' + (scopes ? ' — Scopes: <code>' + scopes + '</code>' : '') + '<br>Push permission: <strong>' + (canPush ? 'Yes' : 'No') + '</strong><br>File access: <strong>OK</strong>';
-
+      result.innerHTML = '<strong>Setup complete!</strong> The encrypted token (<code>' + ENC_FILE + '</code>) was committed to the repo. Teammates can now publish with just the admin password — no further setup needed.';
+      updateGHStatus();
+      refreshSetupPanel();
+      showToast('Setup complete!');
     } catch(e) {
-      result.className = 'test-result fail'; result.textContent = 'Connection failed: ' + e.message;
+      result.className = 'test-result fail';
+      result.innerHTML = 'Setup failed: ' + (e.message || 'unknown error') + '. Common causes: token missing <code>repo</code> scope, wrong owner/repo name, or the token belongs to an account without write access.';
     }
-    btn.disabled = false; btn.textContent = 'Test Connection';
+    btn.disabled = false; btn.textContent = 'Encrypt & Save to Repo';
   });
 
-  document.getElementById('ghClearBtn').addEventListener('click', () => {
-    if (!confirm('Disconnect GitHub? You can reconnect anytime.')) return;
-    localStorage.removeItem(GH_KEY);
-    document.getElementById('ghToken').value = '';
-    document.getElementById('ghTestResult').className = 'test-result';
-    updateGHStatus();
-    showToast('GitHub disconnected.');
+  // Test Token: verify the just-pasted PAT can access the repo (does NOT commit anything)
+  document.getElementById('setupTestBtn').addEventListener('click', async () => {
+    const result = document.getElementById('setupResult');
+    const btn = document.getElementById('setupTestBtn');
+    const token = document.getElementById('ghToken').value.trim();
+    if (!token) { result.className = 'test-result fail'; result.textContent = 'Please paste a token first.'; return; }
+    persistRepoCfg();
+    btn.disabled = true; btn.textContent = 'Testing...';
+    try {
+      const res = await ghAPI('/repos/' + REPO_CFG.owner + '/' + REPO_CFG.repo, {}, token);
+      const scopes = res.headers.get('x-oauth-scopes') || '';
+      if (res.status === 401) { throw new Error('Invalid token (rejected by GitHub).'); }
+      if (res.status === 404) { throw new Error('Repository not found or token has no access.'); }
+      if (!res.ok) { throw new Error('HTTP ' + res.status); }
+      const repo = await res.json();
+      if (scopes && !scopes.includes('repo')) { throw new Error('Classic token is missing the "repo" scope. Found scopes: ' + scopes); }
+      result.className = 'test-result ok';
+      result.innerHTML = 'Token works! Repo: <strong>' + repo.full_name + '</strong> (' + (repo.private ? 'private' : 'public') + ') — push permission: <strong>' + (repo.permissions && repo.permissions.push ? 'Yes' : 'No') + '</strong>' + (scopes ? ' — Scopes: <code>' + scopes + '</code>' : '');
+    } catch(e) {
+      result.className = 'test-result fail';
+      result.textContent = 'Test failed: ' + e.message;
+    }
+    btn.disabled = false; btn.textContent = 'Test Token';
   });
+
+  // Initialize Settings panel state on first render
+  refreshSetupPanel();
 })();
 </script>
 <style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
