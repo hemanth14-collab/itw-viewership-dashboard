@@ -321,6 +321,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "UAE T20 WC 2026 Games": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 148.9,
+    reach: 54.9,
+    avgTVR: 0.28,
+    ltvReach: 38.1,
+    ottReach: 16.8,
+    gender: { male: 0.59, female: 0.41 },
+    urbanRural: { urban: 0.56, rural: 0.44 },
+    nccs: { a: 0.33, b: 0.34, cde: -0.67 },
+    age: { "<15": 0.18, "15-21": 0.12, "22-40": 0.33, "41-50": 0.16, "50+": 0.2 }
+  },
+
   "Ultimate Table Tennis 2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
