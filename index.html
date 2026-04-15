@@ -282,13 +282,13 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
         <div class="metric-card">
           <div class="metric-label">Cumulative Viewership</div>
           <div class="metric-value" id="metricCumulative">--</div>
-          <div class="metric-unit">in Millions</div>
+          <div class="metric-unit" id="metricCumulativeUnit">in Millions</div>
           <div class="metric-desc">Cumulative viewership represents the total, aggregated sum of all views the event has received across Linear TV + Digital Streaming over a specific period, continually added together.</div>
         </div>
         <div class="metric-card">
           <div class="metric-label">Reach (TV + OTT)</div>
           <div class="metric-value" id="metricReach">--</div>
-          <div class="metric-unit">in Millions</div>
+          <div class="metric-unit" id="metricReachUnit">in Millions</div>
           <div class="metric-desc">Total number of unique individuals who watched at least some part of the event across both Linear TV and OTT streaming platforms.</div>
         </div>
         <div class="metric-card">
@@ -416,6 +416,27 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
     return n.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
   }
 
+  // Numbers in the dataset are stored in MILLIONS. When a value exceeds 1000 M
+  // we auto-convert to Billions for easier reading. Returns {value, unit, fullUnit}.
+  function fmtMagnitude(n) {
+    if (n === null || n === undefined) {
+      return { value: 'N/A', unit: '', fullUnit: 'in Millions' };
+    }
+    if (n > 1000) {
+      const b = n / 1000;
+      return {
+        value: b.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
+        unit: 'B',
+        fullUnit: 'in Billions'
+      };
+    }
+    return {
+      value: fmt(n),
+      unit: 'M',
+      fullUnit: 'in Millions'
+    };
+  }
+
   function fmtPct(v) {
     if (v === null || v === undefined) return 'N/A';
     return (v * 100).toFixed(1) + '%';
@@ -473,11 +494,21 @@ h1,h2,h3,.event-name,.section-title,.metric-value,.reach-value{font-family:'Prom
     exportBtn.style.display = noData ? 'none' : 'inline-flex';
     if (noData) { destroyCharts(); return; }
 
-    document.getElementById('metricCumulative').textContent = fmt(d.cumulativeViewership) || 'N/A';
-    document.getElementById('metricReach').textContent = fmt(d.reach) || 'N/A';
+    const cumMag = fmtMagnitude(d.cumulativeViewership);
+    document.getElementById('metricCumulative').textContent = cumMag.value;
+    document.getElementById('metricCumulativeUnit').textContent = cumMag.fullUnit;
+
+    const reachMag = fmtMagnitude(d.reach);
+    document.getElementById('metricReach').textContent = reachMag.value;
+    document.getElementById('metricReachUnit').textContent = reachMag.fullUnit;
+
     document.getElementById('metricTVR').textContent = d.avgTVR !== null ? d.avgTVR : 'N/A';
-    document.getElementById('reachLTV').textContent = d.ltvReach !== null ? fmt(d.ltvReach) + ' M' : 'N/A';
-    document.getElementById('reachOTT').textContent = d.ottReach !== null ? fmt(d.ottReach) + ' M' : 'N/A';
+
+    const ltvMag = fmtMagnitude(d.ltvReach);
+    document.getElementById('reachLTV').textContent = d.ltvReach !== null ? (ltvMag.value + ' ' + ltvMag.unit) : 'N/A';
+
+    const ottMag = fmtMagnitude(d.ottReach);
+    document.getElementById('reachOTT').textContent = d.ottReach !== null ? (ottMag.value + ' ' + ottMag.unit) : 'N/A';
     document.getElementById('sourceValue').textContent = d.dataSource || 'N/A';
 
     destroyCharts();
