@@ -51,6 +51,21 @@ const EVENT_DATA = {
     age: { "<15": 0.26, "15-21": 0.12, "22-40": 0.31, "41-50": 0.13, "50+": 0.18 }
   },
 
+  "Aus v India 2026 T20Is (Women's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 46,
+    reach: 21.3,
+    avgTVR: 0.05,
+    ltvReach: 10.6,
+    ottReach: 10.7,
+    gender: { male: 0.61, female: 0.39 },
+    urbanRural: { urban: 0.44, rural: 3.56 },
+    nccs: { a: 0.24, b: 0.33, cde: 0.43 },
+    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 1.19 }
+  },
+
   "ICC Men's T20 WC 2024": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
