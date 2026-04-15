@@ -332,7 +332,7 @@ const EVENT_DATA = {
     ottReach: 16.8,
     gender: { male: 0.59, female: 0.41 },
     urbanRural: { urban: 0.56, rural: 0.44 },
-    nccs: { a: 0.33, b: 0.34, cde: -0.67 },
+    nccs: { a: 0.33, b: 0.34, cde: 0.33 },
     age: { "<15": 0.18, "15-21": 0.12, "22-40": 0.33, "41-50": 0.16, "50+": 0.2 }
   },
 
