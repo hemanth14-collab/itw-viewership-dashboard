@@ -61,9 +61,9 @@ const EVENT_DATA = {
     ltvReach: 10.6,
     ottReach: 10.7,
     gender: { male: 0.61, female: 0.39 },
-    urbanRural: { urban: 0.44, rural: 3.56 },
+    urbanRural: { urban: 0.44, rural: 0.56 },
     nccs: { a: 0.24, b: 0.33, cde: 0.43 },
-    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 1.19 }
+    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 0.19 }
   },
 
   "ICC Men's T20 WC 2024": {
