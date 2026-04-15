@@ -509,18 +509,34 @@
     }
   },
   "Ind v SL 2025 T20Is (Women's)": {
-    "ltvBroadcaster": null,
-    "digitalBroadcaster": null,
-    "dataSource": null,
-    "cumulativeViewership": null,
-    "reach": null,
-    "avgTVR": null,
-    "ltvReach": null,
-    "ottReach": null,
-    "gender": null,
-    "urbanRural": null,
-    "nccs": null,
-    "age": null
+    "ltvBroadcaster": "Star Sports",
+    "digitalBroadcaster": "JioHotstar",
+    "dataSource": "BARC, Projections based on JioHotstar",
+    "cumulativeViewership": 163.2,
+    "reach": 48.4,
+    "avgTVR": 0.48,
+    "ltvReach": 43,
+    "ottReach": 5.4,
+    "gender": {
+      "male": 0.56,
+      "female": 0.44
+    },
+    "urbanRural": {
+      "urban": 0.44,
+      "rural": 0.56
+    },
+    "nccs": {
+      "a": 0.32,
+      "b": 0.34,
+      "cde": 0.66
+    },
+    "age": {
+      "<15": 0.21,
+      "15-21": 0.13,
+      "22-40": 0.32,
+      "41-50": 0.14,
+      "50+": 0.19
+    }
   },
   "WPL-2026": {
     "ltvBroadcaster": "Star Sports",
@@ -640,66 +656,6 @@
       "22-40": 0.32,
       "41-50": 0.14,
       "50+": 0.2
-    }
-  },
-  "Aus v India 2026 Only Test (Women's)": {
-    "ltvBroadcaster": "Star Sports",
-    "digitalBroadcaster": "JioHotstar",
-    "dataSource": "BARC, OTT Estimates based on JioHotstar",
-    "cumulativeViewership": 23.1,
-    "reach": 13.4,
-    "avgTVR": 0.01,
-    "ltvReach": 10,
-    "ottReach": 3.4,
-    "gender": {
-      "male": 0.61,
-      "female": 0.39
-    },
-    "urbanRural": {
-      "urban": 0.4,
-      "rural": 0.6
-    },
-    "nccs": {
-      "a": 0.26,
-      "b": 0.36,
-      "cde": 0.39
-    },
-    "age": {
-      "<15": 0.26,
-      "15-21": 0.12,
-      "22-40": 0.31,
-      "41-50": 0.13,
-      "50+": 0.18
-    }
-  },
-  "Aus v India 2026 T20Is (Women's)": {
-    "ltvBroadcaster": "Star Sports",
-    "digitalBroadcaster": "JioHotstar",
-    "dataSource": "BARC, OTT Estimates based on JioHotstar",
-    "cumulativeViewership": 46,
-    "reach": 21.3,
-    "avgTVR": 0.05,
-    "ltvReach": 10.6,
-    "ottReach": 10.7,
-    "gender": {
-      "male": 0.61,
-      "female": 0.39
-    },
-    "urbanRural": {
-      "urban": 0.44,
-      "rural": 0.56
-    },
-    "nccs": {
-      "a": 0.24,
-      "b": 0.33,
-      "cde": 0.43
-    },
-    "age": {
-      "<15": 0.23,
-      "15-21": 0.11,
-      "22-40": 0.34,
-      "41-50": 0.14,
-      "50+": 0.19
     }
   }
 }
