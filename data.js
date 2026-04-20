@@ -216,6 +216,21 @@ const EVENT_DATA = {
     age: null
   },
 
+  "Ind v NZ 2026 (T20Is)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 1304,
+    reach: 454,
+    avgTVR: -0.93,
+    ltvReach: 114,
+    ottReach: 240,
+    gender: { male: 0.55, female: 0.45 },
+    urbanRural: { urban: 0.47, rural: 0.53 },
+    nccs: { a: 0.33, b: 0.34, cde: 0.33 },
+    age: { "<15": 0.23, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.17 }
+  },
+
   "Ind v SA 2025 ODI (Men's)": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
