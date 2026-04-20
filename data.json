@@ -283,20 +283,6 @@
       "50+": 0.17
     }
   },
-  "Ind v NZ 2025 T20I (Men's)": {
-    "ltvBroadcaster": null,
-    "digitalBroadcaster": null,
-    "dataSource": null,
-    "cumulativeViewership": null,
-    "reach": null,
-    "avgTVR": null,
-    "ltvReach": null,
-    "ottReach": null,
-    "gender": null,
-    "urbanRural": null,
-    "nccs": null,
-    "age": null
-  },
   "Ind v Aus 2025 ODI (Women's)": {
     "ltvBroadcaster": "Star Sports",
     "digitalBroadcaster": "JioHotstar",
