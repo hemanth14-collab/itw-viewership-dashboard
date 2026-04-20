@@ -733,5 +733,35 @@
       "41-50": 0.14,
       "50+": 0.17
     }
+  },
+  "Ind v NZ 2026 (ODIs) Men": {
+    "ltvBroadcaster": "Star Sports",
+    "digitalBroadcaster": "JioHotstar",
+    "dataSource": "BARC, OTT Estimates based on JioHotstar",
+    "cumulativeViewership": 1004,
+    "reach": 312,
+    "avgTVR": 1.58,
+    "ltvReach": 115,
+    "ottReach": 197,
+    "gender": {
+      "male": 0.56,
+      "female": 0.44
+    },
+    "urbanRural": {
+      "urban": 0.48,
+      "rural": 0.52
+    },
+    "nccs": {
+      "a": 0.33,
+      "b": 0.34,
+      "cde": 0.33
+    },
+    "age": {
+      "<15": 0.22,
+      "15-21": 0.13,
+      "22-40": 0.33,
+      "41-50": 0.14,
+      "50+": 2.17
+    }
   }
 }
