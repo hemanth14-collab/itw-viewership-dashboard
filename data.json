@@ -709,9 +709,9 @@
     "digitalBroadcaster": "JioHotstar",
     "dataSource": "BARC, OTT Estimates based on JioHotstar",
     "cumulativeViewership": 1304,
-    "reach": 454,
-    "avgTVR": -0.93,
-    "ltvReach": 114,
+    "reach": 480,
+    "avgTVR": 3.07,
+    "ltvReach": 140,
     "ottReach": 240,
     "gender": {
       "male": 0.55,
