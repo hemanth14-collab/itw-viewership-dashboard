@@ -257,11 +257,11 @@
     "ltvBroadcaster": "Star Sports",
     "digitalBroadcaster": "JioHotstar",
     "dataSource": "BARC, OTT Estimates based on JioHotstar data",
-    "cumulativeViewership": 657.9,
-    "reach": 218.8,
-    "avgTVR": 1.19,
-    "ltvReach": 123.2,
-    "ottReach": 95.6,
+    "cumulativeViewership": 984.5,
+    "reach": 306,
+    "avgTVR": 2.97,
+    "ltvReach": 127,
+    "ottReach": 179,
     "gender": {
       "male": 0.58,
       "female": 0.42
