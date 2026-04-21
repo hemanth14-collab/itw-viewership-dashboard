@@ -6,7 +6,7 @@
 
 const EVENT_DATA = {
 
-  "Asia Cup-2025": {
+  "Asia Cup-2025 (T20I)": {
     ltvBroadcaster: "Sony Sports",
     digitalBroadcaster: "SonyLiv",
     dataSource: "BARC, GSIQ DAR Studies",
