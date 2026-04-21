@@ -36,6 +36,21 @@ const EVENT_DATA = {
     age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.32, "41-50": 0.14, "50+": 0.2 }
   },
 
+  "Australia v India 2026 - ODI Series (Women's)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 44.14,
+    reach: 21.4,
+    avgTVR: 0.05,
+    ltvReach: 11.8,
+    ottReach: 9.6,
+    gender: { male: 0.57, female: 0.43 },
+    urbanRural: { urban: 0.38, rural: 0.62 },
+    nccs: { a: 0.25, b: 0.35, cde: 0.39 },
+    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.32, "41-50": 0.14, "50+": 0.2 }
+  },
+
   "Australia v India 2026 - T20I Series (Women's)": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
@@ -81,21 +96,6 @@ const EVENT_DATA = {
     age: { "<15": 0.24, "15-21": 0.14, "22-40": 0.34, "41-50": 0.13, "50+": 0.16 }
   },
 
-  "ICC WCWC-2025": {
-    ltvBroadcaster: "Star Sports",
-    digitalBroadcaster: "JioHotstar",
-    dataSource: "BARC, JioStar",
-    cumulativeViewership: 1385,
-    reach: 586.8,
-    avgTVR: 0.27,
-    ltvReach: 140.8,
-    ottReach: 446,
-    gender: { male: 0.53, female: 0.47 },
-    urbanRural: { urban: 0.49, rural: 0.51 },
-    nccs: { a: 0.33, b: 0.33, cde: 0.34 },
-    age: { "<15": 0.21, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.18 }
-  },
-
   "ICC WTC Final-2025": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
@@ -109,6 +109,21 @@ const EVENT_DATA = {
     urbanRural: { urban: 0.54, rural: 0.46 },
     nccs: { a: 0.37, b: 0.33, cde: 0.3 },
     age: { "<15": 0.17, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.22 }
+  },
+
+  "ICC Women's Cricket World Cup 2025": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 1385,
+    reach: 586.8,
+    avgTVR: 0.27,
+    ltvReach: 140.8,
+    ottReach: 446,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.49, rural: 0.51 },
+    nccs: { a: 0.33, b: 0.33, cde: 0.34 },
+    age: { "<15": 0.21, "15-21": 0.13, "22-40": 0.34, "41-50": 0.14, "50+": 0.18 }
   },
 
   "IPL-2025": {
