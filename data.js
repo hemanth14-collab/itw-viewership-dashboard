@@ -6,21 +6,6 @@
 
 const EVENT_DATA = {
 
-  "AUS V IND 2026 T20I (Womens)": {
-    ltvBroadcaster: "Star Sports",
-    digitalBroadcaster: "JioHotstar",
-    dataSource: "BARC, OTT Estimates based on JioHotstar",
-    cumulativeViewership: 46,
-    reach: 21.3,
-    avgTVR: 0.05,
-    ltvReach: 10.6,
-    ottReach: 10.7,
-    gender: { male: 0.61, female: 0.63 },
-    urbanRural: { urban: 0.44, rural: 0.56 },
-    nccs: { a: 0.24, b: 0.33, cde: 0.43 },
-    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 0.19 }
-  },
-
   "Asia Cup-2025": {
     ltvBroadcaster: "Sony Sports",
     digitalBroadcaster: "SonyLiv",
@@ -49,6 +34,21 @@ const EVENT_DATA = {
     urbanRural: { urban: 0.38, rural: 0.62 },
     nccs: { a: 0.25, b: 0.35, cde: 0.39 },
     age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.32, "41-50": 0.14, "50+": 0.2 }
+  },
+
+  "Australia v India 2026 T20I (Womens)": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, OTT Estimates based on JioHotstar",
+    cumulativeViewership: 46,
+    reach: 21.3,
+    avgTVR: 0.05,
+    ltvReach: 10.6,
+    ottReach: 10.7,
+    gender: { male: 0.61, female: 0.63 },
+    urbanRural: { urban: 0.44, rural: 0.56 },
+    nccs: { a: 0.24, b: 0.33, cde: 0.43 },
+    age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 0.19 }
   },
 
   "ICC Men's T20 WC 2024": {
