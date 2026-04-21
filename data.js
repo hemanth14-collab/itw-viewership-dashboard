@@ -36,7 +36,7 @@ const EVENT_DATA = {
     age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.32, "41-50": 0.14, "50+": 0.2 }
   },
 
-  "Australia v India 2026 - T20I Series (Womens)": {
+  "Australia v India 2026 - T20I Series (Women's)": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
     dataSource: "BARC, OTT Estimates based on JioHotstar",
