@@ -690,36 +690,6 @@
       "50+": 2.17
     }
   },
-  "Australia v India 2026 T20I (Womens)": {
-    "ltvBroadcaster": "Star Sports",
-    "digitalBroadcaster": "JioHotstar",
-    "dataSource": "BARC, OTT Estimates based on JioHotstar",
-    "cumulativeViewership": 46,
-    "reach": 21.3,
-    "avgTVR": 0.05,
-    "ltvReach": 10.6,
-    "ottReach": 10.7,
-    "gender": {
-      "male": 0.61,
-      "female": 0.63
-    },
-    "urbanRural": {
-      "urban": 0.44,
-      "rural": 0.56
-    },
-    "nccs": {
-      "a": 0.24,
-      "b": 0.33,
-      "cde": 0.43
-    },
-    "age": {
-      "<15": 0.23,
-      "15-21": 0.11,
-      "22-40": 0.34,
-      "41-50": 0.14,
-      "50+": 0.19
-    }
-  },
   "Asia Cup-2025 (T20I)": {
     "ltvBroadcaster": "Sony Sports",
     "digitalBroadcaster": "SonyLiv",
@@ -748,6 +718,36 @@
       "22-40": 0.34,
       "41-50": 0.14,
       "50+": 0.16
+    }
+  },
+  "Australia v India 2026 - T20I Series (Womens)": {
+    "ltvBroadcaster": "Star Sports",
+    "digitalBroadcaster": "JioHotstar",
+    "dataSource": "BARC, OTT Estimates based on JioHotstar",
+    "cumulativeViewership": 46,
+    "reach": 21.3,
+    "avgTVR": 0.05,
+    "ltvReach": 10.6,
+    "ottReach": 10.7,
+    "gender": {
+      "male": 0.61,
+      "female": 0.63
+    },
+    "urbanRural": {
+      "urban": 0.44,
+      "rural": 0.56
+    },
+    "nccs": {
+      "a": 0.24,
+      "b": 0.33,
+      "cde": 0.43
+    },
+    "age": {
+      "<15": 0.23,
+      "15-21": 0.11,
+      "22-40": 0.34,
+      "41-50": 0.14,
+      "50+": 0.19
     }
   }
 }
