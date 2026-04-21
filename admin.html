@@ -51,6 +51,9 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 .form-group input:focus{border-color:var(--primary)}
 .form-group input::placeholder{color:#D1D5DB}
 .hint{font-size:11px;color:var(--text-muted);font-style:italic;margin-top:2px}
+.rename-indicator{display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;line-height:1.5}
+.rename-indicator.editing{display:block;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE}
+.rename-indicator.renaming{display:block;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
 
 .btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
 .btn{padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
@@ -169,6 +172,7 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
           <input type="text" id="eventSelect" list="eventListData" placeholder="Type event name or select existing...">
           <datalist id="eventListData"></datalist>
           <div class="hint">Select an existing event to load its data, or type a new event name to add one.</div>
+          <div class="rename-indicator" id="renameIndicator"></div>
         </div>
       </div>
     </div>
@@ -427,12 +431,30 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
 
   // ── Edit form ──
   const eventInput = document.getElementById('eventSelect');
+  let editingOriginalName = null; // tracks the loaded event name for rename detection
+
+  // When user selects from datalist (change) — always load the event fresh
   eventInput.addEventListener('change', loadEvent);
-  eventInput.addEventListener('input', () => { setTimeout(loadEvent, 100); });
+
+  // When user types (input) — if editing, just update rename indicator; otherwise try to match
+  eventInput.addEventListener('input', () => {
+    if (editingOriginalName) {
+      updateRenameIndicator();
+    } else {
+      setTimeout(loadEvent, 100);
+    }
+  });
 
   function loadEvent() {
-    const name = eventInput.value.trim(); const d = getAllData()[name];
-    if (!d) { clearForm(true); return; }
+    const name = eventInput.value.trim();
+    const d = getAllData()[name];
+    if (!d) {
+      // Only clear form data if NOT currently editing an event (prevents wipe on rename)
+      if (!editingOriginalName) clearForm(true);
+      updateRenameIndicator();
+      return;
+    }
+    editingOriginalName = name;
     setVal('f_ltvBroadcaster', d.ltvBroadcaster); setVal('f_digitalBroadcaster', d.digitalBroadcaster); setVal('f_dataSource', d.dataSource);
     setVal('f_cumulativeViewership', d.cumulativeViewership); setVal('f_reach', d.reach); setVal('f_avgTVR', d.avgTVR);
     setVal('f_ltvReach', d.ltvReach); setVal('f_ottReach', d.ottReach);
@@ -440,12 +462,31 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     setVal('f_urban', d.urbanRural?.urban); setVal('f_rural', d.urbanRural?.rural);
     setVal('f_nccs_a', d.nccs?.a); setVal('f_nccs_b', d.nccs?.b); setVal('f_nccs_cde', d.nccs?.cde);
     setVal('f_age_u15', d.age?.['<15']); setVal('f_age_15_21', d.age?.['15-21']); setVal('f_age_22_40', d.age?.['22-40']); setVal('f_age_41_50', d.age?.['41-50']); setVal('f_age_50p', d.age?.['50+']);
+    updateRenameIndicator();
+  }
+
+  function updateRenameIndicator() {
+    const el = document.getElementById('renameIndicator');
+    const currentName = eventInput.value.trim();
+    if (editingOriginalName && currentName && currentName !== editingOriginalName) {
+      el.className = 'rename-indicator renaming';
+      el.innerHTML = 'Renaming: <strong>' + editingOriginalName + '</strong> &rarr; <strong>' + currentName + '</strong>. Existing data will be preserved under the new name.';
+    } else if (editingOriginalName) {
+      el.className = 'rename-indicator editing';
+      el.innerHTML = 'Editing: <strong>' + editingOriginalName + '</strong>';
+    } else {
+      el.className = 'rename-indicator';
+    }
   }
 
   function setVal(id, v) { document.getElementById(id).value = (v !== null && v !== undefined) ? v : ''; }
   function getVal(id) { const v = document.getElementById(id).value.trim(); return v === '' ? null : v; }
   function getNum(id) { const v = document.getElementById(id).value.trim(); return v === '' ? null : parseFloat(v); }
-  function clearForm(keepName) { document.querySelectorAll('#formFields input').forEach(i => i.value = ''); if (!keepName) eventInput.value = ''; }
+  function clearForm(keepName) {
+    document.querySelectorAll('#formFields input').forEach(i => i.value = '');
+    if (!keepName) { eventInput.value = ''; editingOriginalName = null; }
+    updateRenameIndicator();
+  }
   document.getElementById('clearFormBtn').addEventListener('click', () => clearForm(false));
 
   function buildEntry() {
@@ -484,9 +525,24 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     const name = eventInput.value.trim();
     if (!name) { showToast('Please enter an event name', 'error'); return; }
 
+    // Detect rename: editing an existing event but name was changed
+    const isRename = editingOriginalName && editingOriginalName !== name;
+    if (isRename) {
+      if (!confirm('Rename "' + editingOriginalName + '" to "' + name + '"?\n\nThe old event will be removed and all its data will be saved under the new name.')) return;
+    }
+
     const entry = buildEntry();
     const all = getAllData();
+
+    // If renaming, delete the old entry
+    if (isRename) {
+      delete all[editingOriginalName];
+    }
     all[name] = entry;
+
+    const commitMsg = isRename
+      ? 'Rename event: ' + editingOriginalName + ' → ' + name
+      : 'Update event data: ' + name;
 
     if (ghOk()) {
       saveBtn.disabled = true;
@@ -497,8 +553,8 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
         const jsContent = buildDataJS(all);
 
         // Commit data.json first, then data.js
-        await ghPutFile('data.json', jsonContent, 'Update event data: ' + name);
-        await ghPutFile('data.js', jsContent, 'Update event data: ' + name);
+        await ghPutFile('data.json', jsonContent, commitMsg);
+        await ghPutFile('data.js', jsContent, commitMsg);
 
         // Clear localStorage overrides since data is now in GitHub
         localStorage.removeItem('itw_overrides');
@@ -507,13 +563,17 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
         Object.assign(EVENT_DATA, all);
 
         populateDatalist();
-        showToast('Published! Changes go live in ~60 seconds.');
+        // Update editing state to reflect the new name
+        editingOriginalName = name;
+        updateRenameIndicator();
+        showToast(isRename ? 'Renamed and published!' : 'Published! Changes go live in ~60 seconds.');
       } catch(e) {
         console.error('Publish failed:', e);
         showToast('Publish failed: ' + e.message, 'error');
         // Fall back to localStorage
         const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
         overrides[name] = entry;
+        if (isRename) delete overrides[editingOriginalName];
         localStorage.setItem('itw_overrides', JSON.stringify(overrides));
         populateDatalist();
       }
@@ -523,8 +583,11 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
       // Token not ready — save to local override and warn
       const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
       overrides[name] = entry;
+      if (isRename) delete overrides[editingOriginalName];
       localStorage.setItem('itw_overrides', JSON.stringify(overrides));
       populateDatalist();
+      editingOriginalName = name;
+      updateRenameIndicator();
       const reason = TOKEN_BLOB ? 'Decryption failed (admin password mismatch).' : 'Setup not yet run.';
       showToast('Saved locally only. ' + reason + ' Owner: see Settings tab.', 'error');
     }
