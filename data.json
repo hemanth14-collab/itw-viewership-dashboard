@@ -343,36 +343,6 @@
       "50+": 0.16
     }
   },
-  "Asia Cup-2025": {
-    "ltvBroadcaster": "Sony Sports",
-    "digitalBroadcaster": "SonyLiv",
-    "dataSource": "BARC, GSIQ DAR Studies",
-    "cumulativeViewership": 1470,
-    "reach": 354.8,
-    "avgTVR": 1.85,
-    "ltvReach": 256.4,
-    "ottReach": 98.4,
-    "gender": {
-      "male": 0.54,
-      "female": 0.46
-    },
-    "urbanRural": {
-      "urban": 0.56,
-      "rural": 0.44
-    },
-    "nccs": {
-      "a": 0.34,
-      "b": 0.33,
-      "cde": 0.33
-    },
-    "age": {
-      "<15": 0.23,
-      "15-21": 0.13,
-      "22-40": 0.34,
-      "41-50": 0.14,
-      "50+": 0.16
-    }
-  },
   "ICC WTC Final-2025": {
     "ltvBroadcaster": "Star Sports",
     "digitalBroadcaster": "JioHotstar",
@@ -748,6 +718,36 @@
       "22-40": 0.34,
       "41-50": 0.14,
       "50+": 0.19
+    }
+  },
+  "Asia Cup-2025 (T20I)": {
+    "ltvBroadcaster": "Sony Sports",
+    "digitalBroadcaster": "SonyLiv",
+    "dataSource": "BARC, GSIQ DAR Studies",
+    "cumulativeViewership": 1470,
+    "reach": 354.8,
+    "avgTVR": 1.85,
+    "ltvReach": 256.4,
+    "ottReach": 98.4,
+    "gender": {
+      "male": 0.54,
+      "female": 0.46
+    },
+    "urbanRural": {
+      "urban": 0.56,
+      "rural": 0.44
+    },
+    "nccs": {
+      "a": 0.34,
+      "b": 0.33,
+      "cde": 0.33
+    },
+    "age": {
+      "<15": 0.23,
+      "15-21": 0.13,
+      "22-40": 0.34,
+      "41-50": 0.14,
+      "50+": 0.16
     }
   }
 }
