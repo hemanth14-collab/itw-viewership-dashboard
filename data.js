@@ -66,7 +66,7 @@ const EVENT_DATA = {
     age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 0.19 }
   },
 
-  "ICC Men's T20 WC 2024": {
+  "ICC Men's T20 World Cup 2024": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
     dataSource: "BARC, JioStar",
