@@ -301,20 +301,33 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   async function ghAPI(path, opts = {}, tokenOverride) {
     const tok = tokenOverride || DECRYPTED_TOKEN;
     if (!tok) throw new Error('No GitHub token available. Setup required.');
-    const headers = { 'Authorization': 'token ' + tok, 'Accept': 'application/vnd.github.v3+json', ...(opts.headers || {}) };
+    const headers = {
+      'Authorization': 'token ' + tok,
+      'Accept': 'application/vnd.github.v3+json',
+      // Bypass any HTTP cache — GitHub's contents API sends Cache-Control: private, max-age=60
+      // which causes stale SHA reads after a recent commit
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      ...(opts.headers || {})
+    };
     if (opts.body) headers['Content-Type'] = 'application/json';
-    return fetch('https://api.github.com' + path, { ...opts, headers });
+    return fetch('https://api.github.com' + path, { ...opts, headers, cache: 'no-store' });
   }
 
   async function ghGetFile(filePath, tokenOverride) {
     const c = REPO_CFG;
-    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath + '?ref=' + (c.branch || 'main'), {}, tokenOverride);
+    // Cache-bust query param to defeat any intermediate cache
+    const buster = '&_=' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const res = await ghAPI('/repos/' + c.owner + '/' + c.repo + '/contents/' + filePath + '?ref=' + (c.branch || 'main') + buster, {}, tokenOverride);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error('GitHub API error: ' + res.status);
     return await res.json();
   }
 
-  async function ghPutFile(filePath, content, message, tokenOverride) {
+  // PUT a file. Retries once on a SHA-mismatch conflict (409 / "does not match")
+  // since GitHub sometimes returns a stale SHA from edge caches right after a commit.
+  async function ghPutFile(filePath, content, message, tokenOverride, _retryCount) {
+    _retryCount = _retryCount || 0;
     const c = REPO_CFG;
     const existing = await ghGetFile(filePath, tokenOverride);
     const body = {
@@ -328,7 +341,14 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
     }, tokenOverride);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'GitHub API error: ' + res.status);
+      const msg = err.message || ('GitHub API error: ' + res.status);
+      const isShaConflict = res.status === 409 || /does not match/i.test(msg);
+      if (isShaConflict && _retryCount < 2) {
+        // Wait for GitHub to settle, then retry with a fresh SHA
+        await new Promise(r => setTimeout(r, 600 * (_retryCount + 1)));
+        return ghPutFile(filePath, content, message, tokenOverride, _retryCount + 1);
+      }
+      throw new Error(msg);
     }
     return await res.json();
   }
@@ -569,21 +589,32 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
         showToast(isRename ? 'Renamed and published!' : 'Published! Changes go live in ~60 seconds.');
       } catch(e) {
         console.error('Publish failed:', e);
-        showToast('Publish failed: ' + e.message, 'error');
-        // Fall back to localStorage
-        const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
-        overrides[name] = entry;
-        if (isRename) delete overrides[editingOriginalName];
-        localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+        showToast('Publish failed: ' + e.message + '. Please try again.', 'error');
+        // For RENAMES, do NOT fall back to localStorage. The override mechanism
+        // can only ADD/MODIFY entries, never delete them — so writing the new
+        // name to overrides while the old name is still in EVENT_DATA produces
+        // a duplicate event in the UI. Just leave the dataset untouched and let
+        // the user retry.
+        if (!isRename) {
+          const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
+          overrides[name] = entry;
+          localStorage.setItem('itw_overrides', JSON.stringify(overrides));
+        }
         populateDatalist();
       }
       saveBtn.disabled = false;
       saveBtn.innerHTML = 'Save &amp; Publish';
     } else {
-      // Token not ready — save to local override and warn
+      // Token not ready
+      if (isRename) {
+        const reason = TOKEN_BLOB ? 'Decryption failed (admin password mismatch).' : 'Setup not yet run.';
+        showToast('Cannot rename: ' + reason + ' Renames require an active publish connection.', 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Save &amp; Publish';
+        return;
+      }
       const overrides = JSON.parse(localStorage.getItem('itw_overrides') || '{}');
       overrides[name] = entry;
-      if (isRename) delete overrides[editingOriginalName];
       localStorage.setItem('itw_overrides', JSON.stringify(overrides));
       populateDatalist();
       editingOriginalName = name;
