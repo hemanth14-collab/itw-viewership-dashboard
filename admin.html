@@ -301,13 +301,15 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   async function ghAPI(path, opts = {}, tokenOverride) {
     const tok = tokenOverride || DECRYPTED_TOKEN;
     if (!tok) throw new Error('No GitHub token available. Setup required.');
+    // NOTE: Do NOT send Cache-Control / Pragma as request headers here.
+    // GitHub's API CORS policy does not allow those headers, so the browser's
+    // CORS preflight (OPTIONS) gets rejected and the whole fetch fails with
+    // "Failed to fetch". We defeat the HTTP cache instead via the `cache:
+    // 'no-store'` fetch option (no preflight) plus a cache-busting query
+    // param on GET requests (see ghGetFile).
     const headers = {
       'Authorization': 'token ' + tok,
       'Accept': 'application/vnd.github.v3+json',
-      // Bypass any HTTP cache — GitHub's contents API sends Cache-Control: private, max-age=60
-      // which causes stale SHA reads after a recent commit
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
       ...(opts.headers || {})
     };
     if (opts.body) headers['Content-Type'] = 'application/json';
