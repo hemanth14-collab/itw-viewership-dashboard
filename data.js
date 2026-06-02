@@ -287,7 +287,7 @@ const EVENT_DATA = {
     ottReach: 27,
     gender: { male: 0.56, female: 0.44 },
     urbanRural: { urban: 0.44, rural: 0.56 },
-    nccs: { a: 0.32, b: 0.34, cde: 0.66 },
+    nccs: { a: 0.32, b: 0.34, cde: 0.34 },
     age: { "<15": 0.21, "15-21": 0.13, "22-40": 0.32, "41-50": 0.14, "50+": 0.19 }
   },
 
@@ -400,8 +400,8 @@ const EVENT_DATA = {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
     dataSource: "BARC, OTT Estimates based on JioHotstar Data",
-    cumulativeViewership: 1342.5,
-    reach: 386.2,
+    cumulativeViewership: 1343,
+    reach: 303,
     avgTVR: 0.63,
     ltvReach: 133,
     ottReach: 170,
