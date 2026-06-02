@@ -301,19 +301,35 @@ h1,h2,h3{font-family:'Prompt',sans-serif}
   async function ghAPI(path, opts = {}, tokenOverride) {
     const tok = tokenOverride || DECRYPTED_TOKEN;
     if (!tok) throw new Error('No GitHub token available. Setup required.');
-    // NOTE: Do NOT send Cache-Control / Pragma as request headers here.
-    // GitHub's API CORS policy does not allow those headers, so the browser's
-    // CORS preflight (OPTIONS) gets rejected and the whole fetch fails with
-    // "Failed to fetch". We defeat the HTTP cache instead via the `cache:
-    // 'no-store'` fetch option (no preflight) plus a cache-busting query
-    // param on GET requests (see ghGetFile).
+    // IMPORTANT — CORS safety:
+    // Send ONLY the headers GitHub's API allows on cross-origin requests
+    // (Authorization, Accept, Content-Type). Do NOT add Cache-Control / Pragma
+    // headers, and do NOT set a `cache:` fetch mode like 'no-store'/'reload' —
+    // Chrome silently injects Cache-Control/Pragma *request* headers for those
+    // modes, which GitHub rejects at the CORS preflight, surfacing as the
+    // generic "Failed to fetch" network error. Cache staleness is handled
+    // instead by a unique cache-busting query param on every GET (see ghGetFile),
+    // which makes each URL distinct so the browser never serves a cached copy.
     const headers = {
       'Authorization': 'token ' + tok,
       'Accept': 'application/vnd.github.v3+json',
       ...(opts.headers || {})
     };
     if (opts.body) headers['Content-Type'] = 'application/json';
-    return fetch('https://api.github.com' + path, { ...opts, headers, cache: 'no-store' });
+
+    // Retry the fetch itself on transient network failures ("Failed to fetch"),
+    // which are thrown as TypeErrors and never produce a Response object.
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await fetch('https://api.github.com' + path, { ...opts, headers });
+      } catch (e) {
+        lastErr = e;
+        // Brief backoff, then retry (300ms, 800ms)
+        if (attempt < 2) await new Promise(r => setTimeout(r, 300 + attempt * 500));
+      }
+    }
+    throw new Error('Network error reaching GitHub (' + (lastErr && lastErr.message ? lastErr.message : 'Failed to fetch') + '). Check your internet connection and try again.');
   }
 
   async function ghGetFile(filePath, tokenOverride) {
