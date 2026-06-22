@@ -141,6 +141,21 @@ const EVENT_DATA = {
     age: { "<15": 0.17, "15-21": 0.21, "22-40": 0.23, "41-50": 0.19, "50+": 0.2 }
   },
 
+  "IPL-2026": {
+    ltvBroadcaster: "Star Sports",
+    digitalBroadcaster: "JioHotstar",
+    dataSource: "BARC, JioStar",
+    cumulativeViewership: 72000,
+    reach: 1220,
+    avgTVR: 2.7,
+    ltvReach: 520,
+    ottReach: 700,
+    gender: { male: 0.53, female: 0.47 },
+    urbanRural: { urban: 0.48, rural: 0.52 },
+    nccs: { a: 0.28, b: 0.32, cde: 0.4 },
+    age: { "<15": 0.24, "15-21": 0.14, "22-40": 0.33, "41-50": 0.13, "50+": 0.15 }
+  },
+
   "ISL-2024/25": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar (Was JioCinema until 14th February 2025)",
