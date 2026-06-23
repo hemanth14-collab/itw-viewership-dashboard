@@ -66,6 +66,21 @@ const EVENT_DATA = {
     age: { "<15": 0.23, "15-21": 0.11, "22-40": 0.34, "41-50": 0.14, "50+": 0.19 }
   },
 
+  "England Women v India Women - T20Is": {
+    ltvBroadcaster: "Sony Sports",
+    digitalBroadcaster: "SonyLiv",
+    dataSource: "BARC, OTT Data based on Platform Estimates",
+    cumulativeViewership: 18,
+    reach: 11.5,
+    avgTVR: 0.02,
+    ltvReach: 4.5,
+    ottReach: 7,
+    gender: { male: 0.58, female: 0.42 },
+    urbanRural: { urban: 0.51, rural: 0.49 },
+    nccs: { a: 0.34, b: 0.34, cde: 0.32 },
+    age: { "<15": 0.2, "15-21": 0.11, "22-40": 0.34, "41-50": 0.21, "50+": 0.14 }
+  },
+
   "ICC Men's T20 World Cup 2024": {
     ltvBroadcaster: "Star Sports",
     digitalBroadcaster: "JioHotstar",
