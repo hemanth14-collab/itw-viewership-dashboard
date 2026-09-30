@@ -14,7 +14,7 @@ const EVENT_DATA = {
     reach: 102.4,
     avgTVR: 1.5,
     ltvReach: 60,
-    ottReach: 30.4,
+    ottReach: 42.4,
     gender: { male: 0.55, female: 0.45 },
     urbanRural: { urban: 0.49, rural: 0.51 },
     nccs: { a: 0.34, b: 0.33, cde: 0.33 },
